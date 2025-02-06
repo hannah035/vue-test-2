@@ -10,7 +10,7 @@
                 <a href="/events">Events</a>
                 <a href="/reviews">Reviews</a>
                 <a href="#books">Books</a>
-                <a href="#abouts">Abouts</a>
+                <a href="/about">About</a>
             </div>
 
             <!-- Header Right Contents -->
@@ -31,7 +31,7 @@
 </template>
 
 <style scoped>
-    
+
 .Header {
     display: flex;
     /* 使用 Flexbox 布局 */
