@@ -11,7 +11,9 @@ import { RouterView } from "vue-router"
 	</div>
 	<div class="Container">
 		<Header />
-		<RouterView />
+		<div class="RouterView_Container">
+			<RouterView />
+		</div>
 	</div>
 </template>
 
@@ -100,5 +102,15 @@ body {
 	box-sizing: border-box;
 	/* Include padding and border in the element's total width and height */
 	overflow: hidden;
+}
+
+.RouterView_Container {
+  right: 60px;
+  left: 60px;
+  top: 130px;
+  bottom: 60px;
+  position: absolute;
+  /* overflow-x: scroll; */
+  overflow: hidden;
 }
 </style>
