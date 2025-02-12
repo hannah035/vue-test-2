@@ -27,6 +27,12 @@
 		<button>Post!</button>
 		TODO:  v-on:click="createPost"    in button
 	</div> -->
+
+	<link
+		href="https://fonts.googleapis.com/css?family=JetBrains+Mono"
+		rel="stylesheet"
+	/>
+
 	<div class="handleScroll">
 		<div class="reviews-container">
 			<div class="sep-line"></div>
