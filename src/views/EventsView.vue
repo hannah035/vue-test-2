@@ -99,17 +99,26 @@ export default {
 	line-height: normal;
 	position: relative;
 }
-
+.event-image-container {
+  width: 100%;
+  height: 100%;
+}
+.event-image {
+	width: 100%;
+	height: 100%;
+}
 .event-image img {
 	position: relative;
-	top: 50px;
-	width: 100%;
+	max-height: 100%;
+	max-width: 100%;
+
+	object-fit: contain;
 }
 .hidden {
 	display: none;
 }
 /* TODO dropdown button and content position */
- .period-dropdown {
+.period-dropdown {
 	height: 100%;
 	width: 100%;
 	/* background-color: green; */
