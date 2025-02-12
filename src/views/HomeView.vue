@@ -1,8 +1,20 @@
 <template>
-  <div>
-    <h1>Home Page</h1>
-    <p>Welcome to the home page!</p>
+  <div class="Home_Container">
+    <div>
+      <h1>NTU SCI-FI CLUB</h1>
+    </div>
+    <div class="news-card">
+      <div class="news-header">
+        <div class="news-title">News.title</div>
+      </div>
+      <div class="news-body">
+        <div class="news-description">
+          news.description
+        </div>
+      </div>
+    </div>
   </div>
+
   <div class="Social_Media_Container">
     <div class="Social_Media_Item">
       <span>INSTAGRAM</span>
@@ -43,6 +55,40 @@
 </script>
 
 <style scoped>
+.Home_Container {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+}
+
+.news-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  right: 60px;
+  left: 63%;
+  top: 60px;
+  bottom: 83px;
+  position: absolute;
+}
+
+.news-title {
+  height: 100%;
+  font-size: large;
+  color: #fff;
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+}
+
+.news-description {
+  font-size: large;
+  color: #fff;
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+}
+
 /* Container for social media icons */
 .Social_Media_Container {
   display: flex;
@@ -52,7 +98,7 @@
   /* 子元素垂直居中 */
   position: absolute;
   /* 固定位置，隨滾動保持不變 */
-  bottom: 60px;
+  bottom: 0px;
   left: 100px;
   right: 40%;
   width: auto;
