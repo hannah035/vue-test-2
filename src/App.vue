@@ -4,6 +4,7 @@ import { RouterView } from "vue-router"
 </script>
 
 <template>
+	<link href="https://fonts.googleapis.com/css?family=JetBrains+Mono" rel="stylesheet" />
 	<div class="Fixed_Line_Container">
 		<div class="Line Bottom_Line"></div>
 		<div class="Line Left_Line"></div>
@@ -105,12 +106,12 @@ body {
 }
 
 .RouterView_Container {
-  right: 60px;
-  left: 60px;
-  top: 130px;
-  bottom: 60px;
-  position: absolute;
-  /* overflow-x: scroll; */
-  overflow: hidden;
+	right: 60px;
+	left: 60px;
+	top: 130px;
+	bottom: 60px;
+	position: absolute;
+	/* overflow-x: scroll; */
+	overflow: hidden;
 }
 </style>
