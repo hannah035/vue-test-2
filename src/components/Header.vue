@@ -25,7 +25,7 @@
                             stroke="white" stroke-width="1.00088" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <a href="#contacts">Contacts</a>
+                <a href="#join_us">Join Us</a>
             </div>
         </div>  
 </template>
@@ -96,7 +96,7 @@
     /* 上右下左的外邊距 */
     align-items: center;
     /* 確保垂直方向居中 */
-    gap: 0rem;
+    gap: 0.15rem;
 }
 
 /* 右側內容的鏈接樣式 */
@@ -109,6 +109,7 @@
     /* 字體大小 */
     z-index: 20;
     font-family: "JetBrains Mono";
+    word-spacing: -0.25rem;
 }
 
 

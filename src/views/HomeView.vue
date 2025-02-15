@@ -1,15 +1,15 @@
 <template>
   <div class="Home_Container">
-    <div>
-      <h1>NTU SCI-FI CLUB</h1>
+    <div class="Title_Container">
+      NTU<br>SCI-FI CLUB
     </div>
     <div class="news-card">
       <div class="news-header">
-        <div class="news-title">News.title</div>
+        <div class="news-title">News Title</div>
       </div>
       <div class="news-body">
         <div class="news-description">
-          news.description
+          Contents
         </div>
       </div>
     </div>
@@ -61,6 +61,19 @@
   justify-content: left;
 }
 
+.Title_Container {
+  position: absolute;
+  bottom: 83px;
+  left: 100px;
+  padding: 0 0 20px 10px;
+
+  font-size: 3rem;
+  color: #fff;
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 600;
+}
+
 .news-card {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
@@ -73,8 +86,10 @@
 }
 
 .news-title {
+  padding: 20px 0 5px 20px;
+  /* background: white; */
   height: 100%;
-  font-size: large;
+  font-size: 1.5rem;
   color: #fff;
   font-family: "JetBrains Mono";
   font-style: normal;
@@ -82,7 +97,8 @@
 }
 
 .news-description {
-  font-size: large;
+  padding: 0 0 0 20px;
+  font-size: 1rem;
   color: #fff;
   font-family: "JetBrains Mono";
   font-style: normal;
