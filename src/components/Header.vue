@@ -9,7 +9,7 @@
                 <a href="/">Home</a>
                 <a href="/events">Events</a>
                 <a href="/reviews">Reviews</a>
-                <a href="#books">Books</a>
+                <a href="/books">Books</a>
                 <a href="/about">About</a>
             </div>
 
