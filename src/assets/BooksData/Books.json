@@ -1,0 +1,52 @@
+{
+	"Dune": {
+		"title": "Dune",
+		"cover": "https://m.media-amazon.com/images/I/81TmnPZWb0L.jpg",
+		"author": "Frank Herbert"
+	},
+	"Neuromancer": {
+		"title": "Neuromancer",
+		"cover": "https://m.media-amazon.com/images/I/91Bx5ilP+EL.jpg",
+		"author": "William Gibson"
+	},
+	"Foundation": {
+		"title": "Foundation",
+		"cover": "https://m.media-amazon.com/images/I/91ZYBjR+gYL._AC_UF1000,1000_QL80_.jpg",
+		"author": "Isaac Asimov"
+	},
+	"Snow Crash": {
+		"title": "Snow Crash",
+		"cover": "https://s.eslite.com/Upload/Product/201801/o/636518725228486250.jpg",
+		"author": "Neal Stephenson"
+	},
+	"The Left Hand of Darkness": {
+		"title": "The Left Hand of Darkness",
+		"cover": "https://cdn.kobo.com/book-images/f6420f56-3876-4684-a0cd-7c69d346bb4d/1200/1200/False/the-left-hand-of-darkness-1.jpg",
+		"author": "Ursula K. Le Guin"
+	},
+	"Hyperion": {
+		"title": "Hyperion",
+		"cover": "https://upload.wikimedia.org/wikipedia/zh/7/73/Hyperion_cover.jpg",
+		"author": "Dan Simmons"
+	},
+	"The Martian": {
+		"title": "The Martian",
+		"cover": "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p10980706_p_v13_ar.jpg",
+		"author": "Andy Weir"
+	},
+	"Ender's Game": {
+		"title": "Ender's Game",
+		"cover": "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p9983313_p_v10_ak.jpg",
+		"author": "Orson Scott Card"
+	},
+	"The Hitchhiker's Guide to the Galaxy": {
+		"title": "The Hitchhiker's Guide to the Galaxy",
+		"cover": "https://m.media-amazon.com/images/M/MV5BMTg4OWYwZjgtZDU0ZS00NjU4LTkxNjItYmYyYmUwNDU5YmM3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+		"author": "Douglas Adams"
+	},
+	"Do Androids Dream of Electric Sheep?": {
+		"title": "Do Androids Dream of Electric Sheep?",
+		"cover": "https://cdn.kobo.com/book-images/e8e3ee02-cb08-4377-a96e-a6bd2adb16d4/1200/1200/False/do-androids-dream-of-electric-sheep.jpg",
+		"author": "Philip K. Dick"
+	}
+}
