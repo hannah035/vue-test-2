@@ -11,11 +11,16 @@
 							:key="book"
 						>
 							<div class="product-thumbnail">
-								<img loading="lazy" :src="book.cover" />
+								<img
+									loading="lazy"
+									:src="JSON.parse(book).cover"
+								/>
 							</div>
 
 							<div class="product-title">
-								<div class="text">{{ book.title }}</div>
+								<div class="text">
+									{{ JSON.parse(book).title }}
+								</div>
 							</div>
 						</button>
 					</div>
@@ -96,15 +101,19 @@
 	</div>
 </template>
 <script>
-import booksData from "@/assets/BooksData/Books.json"
+import bookService from "../services/bookService"
 export default {
 	name: "BooksView",
 	data() {
 		return {
-			booksData,
-			booksKey: Object.keys(booksData),
+			booksData: "",
+			booksKey: [],
 			page: 1,
 		}
+	},
+	async mounted() {
+		this.booksData = await bookService.allBooks()
+		this.booksKey = Object.keys(this.booksData)
 	},
 	methods: {},
 }
