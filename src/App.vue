@@ -1,5 +1,5 @@
 <script setup>
-import Header from "@/components/Header.vue"
+import Header from "./components/Header.vue"
 import { RouterView } from "vue-router"
 </script>
 
@@ -13,7 +13,7 @@ import { RouterView } from "vue-router"
 	<div class="Container">
 		<Header />
 		<div class="RouterView_Container">
-			<RouterView />
+			<router-view> </router-view>
 		</div>
 	</div>
 </template>

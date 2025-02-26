@@ -61,7 +61,7 @@
 	</div>
 </template>
 <script>
-import reviewsData from "@/assets/ReviewsData/Reviews.json"
+import reviewsData from "../assets/ReviewsData/Reviews.json"
 export default {
 	name: "ReviewsView",
 	data() {

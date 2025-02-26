@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import eventsData from "@/assets/EventsData/Events"
+import eventsData from "../assets/EventsData/Events"
 export default {
 	name: "EventsView",
 	data() {
