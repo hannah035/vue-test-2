@@ -11,7 +11,49 @@
 				<div class="time-line-progress-bar"></div>
 			</div>
 			<div class="container">
-				<!-- TODO:store data in json object -->
+				<template v-for="index in indexList" :key="index">
+					<div class="grid">
+						<div class="time-line-left">
+							<div
+								class="time-line-left-text textDark historyText"
+							>
+								{{ aboutData[index].tenure }}<br />
+								{{ aboutData[index].name }}
+							</div>
+						</div>
+						<div class="time-line-dot">
+							<div class="dot dotDark"></div>
+						</div>
+						<div class="time-line-right">
+							<div
+								class="time-line-right-text textDark historyText"
+							>
+								<span class="president">{{
+									aboutData[index].term
+								}}</span
+								><br /><br />
+								<template
+									v-for="event in aboutData[index].event"
+									:key="event"
+								>
+									<a
+										:href="event.url"
+										v-if="event.url != 'null'"
+										>{{ event.title }}</a
+									>
+									<template v-else>
+										{{ event.title }}</template
+									>
+									<br />
+								</template>
+							</div>
+						</div>
+						<div class="empty"></div>
+					</div>
+				</template>
+			</div>
+			<!-- <div class="container">
+				
 				<div class="grid">
 					<div class="time-line-left">
 						<div class="time-line-left-text textDark historyText">
@@ -931,7 +973,7 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</div> -->
 
 			<div class="cover-down"></div>
 		</div>
@@ -941,9 +983,17 @@
 	</div>
 </template>
 <script>
+import aboutData from "../assets/AboutData/About"
 export default {
 	mounted() {
 		this.initAttributes()
+	},
+	data() {
+		var indexList = Object.keys(aboutData).sort()
+		return {
+			indexList,
+			aboutData,
+		}
 	},
 	methods: {
 		lightUp() {
@@ -981,7 +1031,7 @@ export default {
 					dotDarks[i].style.backgroundColor = `rgb(${r},${g},${b})`
 					textDarks[2 * i].style.color = `rgb(${r},${g},${b})`
 					textDarks[2 * i + 1].style.color = `rgb(${r},${g},${b})`
-					rightText.classList.add("fadeLeft")
+					rightText.classList.add("fadeRight")
 				} else {
 					dotDarks[
 						i
@@ -992,7 +1042,7 @@ export default {
 					textDarks[
 						2 * i + 1
 					].style.color = `rgb(${colorStart},${colorStart},${colorStart})`
-					rightText.classList.remove("fadeLeft")
+					rightText.classList.remove("fadeRight")
 				}
 			}
 		},
@@ -1021,10 +1071,11 @@ export default {
 				.getBoundingClientRect().top
 			timeLineProgressBar.style.height = `${viewHeight / 2}px`
 			timeLineProgressBar.style.top = `${windowTop}px`
-
+			
 			const endDiv = document.querySelector(".end")
 			endDiv.style.height = `${viewHeight}px`
 		},
+		
 	},
 }
 </script>
@@ -1175,6 +1226,7 @@ body {
 	grid-row: 1/2;
 	position: relative;
 }
+
 .dot {
 	width: var(--dot_size);
 	height: var(--dot_size);
@@ -1207,14 +1259,70 @@ body {
 .time-line-right.historyText {
 	color: black;
 }
-.fadeLeft {
-	opacity: 1;
-	animation: fade-left 1s ease-in-out;
+@media (max-width: 700px) {
+	#time-line-progress {
+		left: calc(
+			10% - var(--time-line-width) / 2 + var(--dot_size) / 2 +
+				var(--dot_size_outer)
+		);
+	}
+	.time-line-progress-bar {
+		left: calc(
+			10% - var(--time-line-width) / 2 + var(--dot_size) / 2 +
+				var(--dot_size_outer)
+		);
+
+	}
+	.grid {
+		padding-top: var(--grid-margin);
+		display: grid;
+		width: 80%;
+		height: fit-content;
+		margin-left: auto;
+		margin-right: auto;
+		border-style: none;
+		grid-template-columns: 80px 1fr;
+		grid-template-rows: auto;
+	}
+	.time-line-left {
+		border-style: none;
+		grid-column: 2/3;
+		grid-row: 1/2;
+	}
+	.time-line-right {
+		border-style: none;
+		grid-column: 2/3;
+		grid-row: 2/3;
+	}
+	.time-line-dot {
+		border-style: none;
+		grid-column: 1/2;
+		grid-row: 1/2;
+		position: relative;
+	}
+	.empty {
+		grid-column: 1/2;
+		grid-row: 2/3;
+	}
+	.dot {
+		left: 0;
+	}
+
+	.time-line-left-text {
+		text-align: left;
+		position: sticky;
+		top: 50%;
+	}
 }
 
-@keyframes fade-left {
+.fadeRight {
+	opacity: 1;
+	animation: fade-right 1s ease-in-out;
+}
+
+@keyframes fade-right {
 	0% {
-		transform: translateX(-100px);
+		transform: translateX(100px);
 		opacity: 0;
 	}
 	100% {

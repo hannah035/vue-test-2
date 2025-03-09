@@ -114,4 +114,16 @@ body {
 	/* overflow-x: scroll; */
 	overflow: hidden;
 }
+@media (max-width: 700px) {
+	.Left_Line{
+		display: none;
+	}
+	.Right_Line{
+		display: none;
+	}
+	.RouterView_Container{
+		left: 0;
+		right: 0;
+	}
+}
 </style>

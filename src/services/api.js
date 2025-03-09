@@ -1,6 +1,6 @@
 import axios from "axios"
 // const baseUrl = '/api/books'
-const baseUrl = "/api"
+const baseUrl = "http://localhost:3000/api"
 
 // TODO: add proxy in vite.config.js
 
