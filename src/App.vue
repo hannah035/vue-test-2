@@ -4,7 +4,10 @@ import { RouterView } from "vue-router"
 </script>
 
 <template>
-	<link href="https://fonts.googleapis.com/css?family=JetBrains+Mono" rel="stylesheet" />
+	<link
+		href="https://fonts.googleapis.com/css?family=JetBrains+Mono"
+		rel="stylesheet"
+	/>
 	<div class="Fixed_Line_Container">
 		<div class="Line Bottom_Line"></div>
 		<div class="Line Left_Line"></div>
@@ -112,18 +115,22 @@ body {
 	bottom: 60px;
 	position: absolute;
 	/* overflow-x: scroll; */
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: scroll;
 }
 @media (max-width: 700px) {
-	.Left_Line{
+	.Left_Line {
 		display: none;
 	}
-	.Right_Line{
+	.Right_Line {
 		display: none;
 	}
-	.RouterView_Container{
+	.RouterView_Container {
 		left: 0;
 		right: 0;
+	}
+	.RouterView_Container {
+		top: 62px;
 	}
 }
 </style>

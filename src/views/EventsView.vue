@@ -100,8 +100,8 @@ export default {
 	position: relative;
 }
 .event-image-container {
-  width: 100%;
-  height: 100%;
+	width: 100%;
+	height: 100%;
 }
 .event-image {
 	width: 100%;
@@ -158,5 +158,28 @@ export default {
 .highlight {
 	color: yellow;
 	/* TODO change highlight color */
+}
+
+@media (max-width: 768px) {
+	.container {
+		width: 100%;
+		height: 100%;
+		display: grid;
+		box-sizing: border-box;
+		/* For mobile, use a single column layout */
+		grid-template-columns: 1fr;
+		grid-template-rows: 1fr 1fr 100px;
+		padding: 2% 3%; /* Reduced padding for smaller screens */
+	}
+	.event-section {
+		grid-row: span 1;
+	}
+	.period-dropdown {
+		grid-row: span 1;
+		/* background-color: green; */
+	}
+	.event-options {
+		grid-row: span 1;
+	}
 }
 </style>
