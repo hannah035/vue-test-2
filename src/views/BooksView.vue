@@ -99,6 +99,7 @@
 
 <script>
 import bookService from "../services/bookService"
+import { validUsers } from "@/assets/BooksData/validUser"
 
 export default {
 	name: "BooksView",
@@ -152,6 +153,7 @@ export default {
 			this.scrollToItem(this.selectedBookIndex)
 		},
 		async sendBorrowRequest() {
+			if (!validUsers.includes(this.userId)) return
 			var newBook = {
 				isbn: JSON.parse(this.selectedBook).isbn,
 				title: JSON.parse(this.selectedBook).title,
@@ -168,7 +170,7 @@ export default {
 			)
 			this.booksData = await bookService.allBooks()
 			this.booksKey = Object.keys(this.booksData)
-			this.userId=''
+			this.userId = ""
 			this.closeDetails()
 		},
 	},
@@ -323,6 +325,8 @@ p {
 	height: 30px;
 	font-size: 20px;
 	background: #fff;
+	color: black;
+	text-align: center;
 	border: none;
 	border-radius: 50%;
 	cursor: pointer;
