@@ -53,9 +53,41 @@
 									class="large-image"
 								/>
 								<h2>{{ JSON.parse(selectedBook).title }}</h2>
-								<p>作者：{{ JSON.parse(selectedBook).author }}</p>
-								<p>出版社：{{ JSON.parse(selectedBook).publisher }}</p>
-								<p>位置：{{ JSON.parse(selectedBook).place }}</p>
+								<p>
+									作者：{{ JSON.parse(selectedBook).author }}
+								</p>
+								<p>
+									出版社：{{
+										JSON.parse(selectedBook).publisher
+									}}
+								</p>
+								<p>
+									位置：{{ JSON.parse(selectedBook).place }}
+								</p>
+								<p
+									v-if="
+										JSON.parse(selectedBook).borrow == '0'
+									"
+								>
+									狀態：可借閱
+								</p>
+								<p v-else>狀態：不可借閱</p>
+								<!-- TODO: borrow form -->
+								<div class="borrow-section">
+									<input
+										type="text"
+										id="userId"
+										v-model="userId"
+										placeholder="請輸入您的用戶ID"
+										class="user-id-input"
+									/>
+									<button
+										@click="sendBorrowRequest"
+										class="borrow-btn"
+									>
+										借閱
+									</button>
+								</div>
 							</div>
 						</div>
 					</transition>
@@ -66,8 +98,7 @@
 </template>
 
 <script>
-import { nextTick } from "vue";
-import bookService from "../services/bookService";
+import bookService from "../services/bookService"
 
 export default {
 	name: "BooksView",
@@ -79,57 +110,78 @@ export default {
 			selectedBookIndex: null,
 			page: 1,
 			containerWidth: 0,
-		};
+			userId: "",
+		}
 	},
 	computed: {
 		gridColumns() {
-			const imageWidth = 250; // Fixed image width
-			const gap = this.containerWidth * 0.02; // Gap between images
+			const imageWidth = 250 // Fixed image width
+			const gap = this.containerWidth * 0.02 // Gap between images
 			const availableWidth = this.selectedBook
 				? this.containerWidth * 0.7 // 50% width when details panel is visible
-				: this.containerWidth; // Full width otherwise
+				: this.containerWidth // Full width otherwise
 			const maxColumns = Math.floor(
 				(availableWidth + gap) / (imageWidth + gap)
-			);
-			const columns = Math.max(2, Math.min(8, maxColumns)); // Between 2 and 8 columns
-			return `repeat(${columns}, ${imageWidth}px)`;
+			)
+			const columns = Math.max(2, Math.min(8, maxColumns)) // Between 2 and 8 columns
+			return `repeat(${columns}, ${imageWidth}px)`
 		},
 	},
 	methods: {
 		selectBook(book, index) {
-			this.selectedBook = book;
-			this.selectedBookIndex = index;
+			this.selectedBook = book
+			this.selectedBookIndex = index
 		},
 		updateContainerWidth() {
 			if (this.$refs.container) {
-				this.containerWidth = this.$refs.container.offsetWidth;
+				this.containerWidth = this.$refs.container.offsetWidth
 			}
 		},
 		scrollToItem(index) {
-			const bookItem = this.$refs[`bookItem-${index}`][0]; // Get the DOM element
+			const bookItem = this.$refs[`bookItem-${index}`][0] // Get the DOM element
 			if (bookItem) {
 				bookItem.scrollIntoView({
 					behavior: "smooth",
-				});
+				})
 			}
 		},
 		closeDetails() {
-			this.selectedBook = null;
+			this.selectedBook = null
 		},
 		scrollToSelectedItem() {
-			this.scrollToItem(this.selectedBookIndex);
+			this.scrollToItem(this.selectedBookIndex)
+		},
+		async sendBorrowRequest() {
+			var newBook = {
+				isbn: JSON.parse(this.selectedBook).isbn,
+				title: JSON.parse(this.selectedBook).title,
+				cover: JSON.parse(this.selectedBook).cover,
+				author: JSON.parse(this.selectedBook).author,
+				publisher: JSON.parse(this.selectedBook).publisher,
+				date: JSON.parse(this.selectedBook).data,
+				place: JSON.parse(this.selectedBook).place,
+				borrow: this.userId,
+			}
+			await bookService.postBook(
+				this.selectedBookIndex,
+				JSON.stringify(newBook)
+			)
+			this.booksData = await bookService.allBooks()
+			this.booksKey = Object.keys(this.booksData)
+			this.userId=''
+			this.closeDetails()
 		},
 	},
 	async mounted() {
-		this.booksData = await bookService.allBooks();
-		this.booksKey = Object.keys(this.booksData);
-		this.updateContainerWidth();
-		window.addEventListener("resize", this.updateContainerWidth);
+		this.booksData = await bookService.allBooks()
+		this.booksKey = Object.keys(this.booksData)
+		this.updateContainerWidth()
+		window.addEventListener("resize", this.updateContainerWidth)
 	},
 	beforeUnmount() {
-		window.removeEventListener("resize", this.updateContainerWidth);
+		window.removeEventListener("resize", this.updateContainerWidth)
 	},
-};
+}
 </script>
 
 <style>
@@ -278,6 +330,64 @@ p {
 }
 .close-btn:hover {
 	background: #f1f3f4;
+}
+/* Add to style section */
+.borrow-section {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.user-id-input {
+	padding: 10px;
+	width: 90%;
+	border: 1px solid #ddd;
+	border-radius: 25px;
+	font-family: "JetBrains Mono";
+	font-size: 14px;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.borrow-btn {
+	width: 90%; /* Slightly less than half to account for spacing */
+	padding: 10px;
+	background-color: #f5a623;
+	color: white;
+	border: none;
+	border-radius: 25px;
+	font-family: "JetBrains Mono";
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	text-align: center;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.borrow-btn:hover {
+	background-color: #e69520;
+}
+
+/* Adjust mobile styles */
+@media (max-width: 768px) {
+	.borrow-section {
+		margin-top: 15px;
+		gap: 8px;
+	}
+
+	.user-id-input {
+		padding: 6px;
+		font-size: 0.9rem;
+	}
+
+	.borrow-btn {
+		padding: 8px;
+		font-size: 0.9rem;
+	}
 }
 
 /* Transitions */

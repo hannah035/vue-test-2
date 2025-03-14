@@ -8,5 +8,8 @@ class bookService {
 	static allBooks() {
 		return this.queryBook("*")
 	}
+	static postBook(key, value) {
+		return api.post(ROUTE, { key: key, value: value })
+	}
 }
 export default bookService

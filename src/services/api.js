@@ -16,7 +16,7 @@ export default {
 			})
 	},
 	post(route, data) {
-		return axios.post(`${baseUrl}/${route}`, { data })
+		return axios.post(`${baseUrl}/${route}`,  data )
 	},
 	delete(route, key) {
 		return axios.delete(`${baseUrl}/${route}`, { data: { key } })

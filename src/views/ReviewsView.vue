@@ -4,23 +4,28 @@
 			<div class="sep-line"></div>
 			<div class="review-item">
 				<template v-for="(format, index) in Formats" :key="index">
-					<div class="work-format" :id="format">
+					<div
+						class="work-format"
+						:id="format"
+						v-bind="setFormatSpan(format)"
+					>
 						<div class="format-label">{{ format }}</div>
 					</div>
-					<div
-						class="review-card"
-						v-for="(review, index) in Reviews[format]"
-						:key="index"
-					>
-						<div class="review-header">
-							<div class="review-title">{{ review.title }}</div>
-						</div>
-						<div class="review-body">
-							<div class="review-description">
-								{{ review.description }}
+					<template v-for="(review, index) in Reviews" :key="index">
+						<div class="review-card" v-if="review.format == format">
+							<div class="review-header">
+								<div class="review-title">
+									{{ review.title }}
+								</div>
+							</div>
+							<div class="review-body">
+								<div class="review-description">
+									{{ review.description }}
+								</div>
 							</div>
 						</div>
-					</div>
+					</template>
+					<!-- {{ Reviews }} -->
 				</template>
 			</div>
 		</div>
@@ -75,12 +80,15 @@
 
 <script>
 import reviewsData from "../assets/ReviewsData/Reviews.json"
+import reviewService from "@/services/reviewService"
 export default {
 	name: "ReviewsView",
 	data() {
 		return {
-			Reviews: reviewsData,
-			Formats: Object.keys(reviewsData),
+			reviewsRaw: {},
+			Reviews: {},
+			Formats: ["Novels", "Movies", "Others"],
+			formatCounts: { Novels: 0, Movies: 0, Others: 0 },
 			error: "",
 			rate: 0,
 			author: "",
@@ -90,25 +98,57 @@ export default {
 				format: "",
 				title: "",
 				description: "",
+				author: "",
 			},
 		}
 	},
+	computed: {},
 	methods: {
+		getNow() {
+			const today = new Date()
+			const date =
+				today.getFullYear() +
+				"-" +
+				(today.getMonth() + 1) +
+				"-" +
+				today.getDate()
+			const time =
+				today.getHours() +
+				":" +
+				today.getMinutes() +
+				":" +
+				today.getSeconds()
+			const dateTime = date + "," + time + ","
+			return dateTime
+		},
+		makeID(length) {
+			let result = ""
+			const characters =
+				"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+			const charactersLength = characters.length
+			let counter = 0
+			while (counter < length) {
+				result += characters.charAt(
+					Math.floor(Math.random() * charactersLength)
+				)
+				counter += 1
+			}
+			return result
+		},
+		createKey() {
+			const date = this.getNow()
+			const id = this.makeID(10)
+			return `REVIEW:TIMESTAMP:${date.toString()};ID:${id}`
+		},
 		toggleReviewForm() {
 			this.showReviewForm = !this.showReviewForm
 			// Reset form when closing
-			if (!this.showReviewForm) {
-				this.newReview = {
-					format: "",
-					title: "",
-					description: "",
-				}
-			}
 		},
 		selectFormat(format) {
 			this.newReview.format = format
 		},
 		submitReview() {
+			const key = this.createKey()
 			if (
 				this.newReview.format &&
 				this.newReview.title &&
@@ -127,7 +167,65 @@ export default {
 				this.toggleReviewForm()
 				this.error = "Please fill in all fields"
 			}
+			this.postReview()
 		},
+		initAttributes() {
+			const sepLine = document.querySelector(".sep-line")
+			sepLine.style.width = "calc(100% - 63.2px)"
+		},
+		updateFormatCounts(reviews) {
+			// Reset counts
+			this.formatCounts = {}
+			// Set counts for each format based on reviews
+			this.Formats.forEach((format) => {
+				this.formatCounts[format] = reviews.filter(
+					(review) => review.format === format
+				).length
+			})
+		},
+		async getReview() {
+			this.reviewsRaw = await reviewService.queryReview("*")
+			this.parseReview()
+		},
+		async postReview() {
+			const key = this.createKey()
+			const value = JSON.stringify(this.newReview)
+			await reviewService.postReview(key, value)
+
+			await this.getReview()
+			if (!this.showReviewForm) {
+				this.newReview = {
+					format: "",
+					title: "",
+					description: "",
+				}
+			}
+		},
+		parseReview() {
+			var keys = Object.keys(this.reviewsRaw)
+			for (var i = 0; i < keys.length; i++) {
+				this.Reviews[keys[i]] = JSON.parse(this.reviewsRaw[keys[i]])
+			}
+			for (var format of this.Formats) {
+				this.formatCounts[format] = 0
+				for (var i = 0; i < keys.length; i++) {
+					if (this.Reviews[keys[i]].format == format) {
+						this.formatCounts[format] += 1
+					}
+				}
+			}
+		},
+		setFormatSpan(format) {
+			var attributes = {}
+			attributes["style"] = {
+				"grid-column": `span ${this.formatCounts[format]}`,
+			}
+			return attributes
+		},
+	},
+	async mounted() {
+		await this.getReview()
+		this.initAttributes()
 	},
 }
 </script>
@@ -170,7 +268,6 @@ export default {
 	width: fit-content;
 }
 .sep-line {
-	width: calc(100% - 63.2px);
 	/* TODO: set width in mounted */
 	height: 1px;
 	background-color: white;
@@ -179,7 +276,7 @@ export default {
 	left: 63.2px;
 }
 .work-format {
-	grid-column: span 4;
+	/* grid-column: span 2; */
 	grid-row: 1 / 2;
 	height: 100%;
 	position: relative;
@@ -310,7 +407,7 @@ export default {
 }
 
 .category-circle {
-	width: 150px;
+	width: 100px;
 	height: 40px;
 	border-radius: 20px;
 	display: flex;
@@ -401,5 +498,8 @@ export default {
 
 .cancel-btn:hover {
 	background-color: #666;
+}
+h3 {
+	color: wheat;
 }
 </style>

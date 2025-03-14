@@ -55,6 +55,7 @@
 
 			<div class="cover-down"></div>
 		</div>
+		<!-- TODO: update history to latests -->
 		<div class="end">
 			<div class="title-text">TO BE CONTINUED . . .</div>
 		</div>
