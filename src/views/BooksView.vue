@@ -116,7 +116,8 @@ export default {
 	},
 	computed: {
 		gridColumns() {
-			const imageWidth = 250 // Fixed image width
+			
+			const imageWidth = this.containerWidth>768 ? 250 : 200 // Fixed image width
 			const gap = this.containerWidth * 0.02 // Gap between images
 			const availableWidth = this.selectedBook
 				? this.containerWidth * 0.7 // 50% width when details panel is visible
