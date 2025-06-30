@@ -6,8 +6,16 @@
 				<div class="news-title">2025 Spring</div>
 			</div>
 			<div class="news-body">
-				<!-- <div class="news-description">Contents</div> -->
-				<img class="news-image" src="https://i.imgur.com/lB9vX8o.jpg" />
+				<!-- <div class="news-description">Contents</div>
+				<img class="news-image" src="https://i.imgur.com/lB9vX8o.jpg" /> -->
+				
+				<!-- 顯示試算表內容 -->
+				<ul v-if="sheetData.length">
+				<li v-for="(row, idx) in sheetData" :key="idx">
+					{{ row.join(' | ') }}
+				</li>
+				</ul>
+				<div v-else>載入中...</div>
 			</div>
 		</div>
 
@@ -80,7 +88,18 @@
 </template>
 <!-- https://imgur.com/a/cqa6TPP -->
 <script>
-// No changes needed in the script for mobile optimization
+export default {
+  data() {
+    return {
+      sheetData: []
+    }
+  },
+  async mounted() {
+    // API 路徑
+    const res = await fetch('/api/board');
+    this.sheetData = await res.json();
+  }
+}
 </script>
 <style>
 :root {
