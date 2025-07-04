@@ -2,12 +2,38 @@
 	<div class="Home_Container">
 		<div class="Title_Container">NTU<br />SCI-FI CLUB</div>
 		<div class="news-card">
-			<div class="news-header">
-				<div class="news-title">2025 Spring</div>
-			</div>
-			<div class="news-body">
-				<!-- <div class="news-description">Contents</div> -->
-				<img class="news-image" src="https://i.imgur.com/lB9vX8o.jpg" />
+			<div class="news-body" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+				<!-- 顯示當前頁面的公告內容 -->
+				<div class="news-content">
+					<div v-if="currentPageData.length" class="announcement-item">
+						<div v-for="(announcement, idx) in currentPageData" :key="idx" class="announcement-container">
+							<!-- 公告標題 -->
+							<div class="announcement-title">
+								{{ getAnnouncementTitle(announcement) }}
+							</div>
+							<!-- 公告內容 -->
+							<div class="announcement-content">
+								{{ getAnnouncementContent(announcement) }}
+							</div>
+							<!-- 公告日期 -->
+							<div class="announcement-date">
+								{{ getAnnouncementDate(announcement) }}
+							</div>
+						</div>
+					</div>
+					<div v-else class="loading-text">
+						{{ sheetData.length === 0 ? '暫無公告' : '載入中...' }}
+					</div>
+				</div>
+				<!-- 底部圓點分頁指示器 -->
+				<div class="pagination-dots" v-if="totalPages > 1">
+					<span 
+						v-for="(page, index) in totalPages" 
+						:key="index"
+						:class="['dot', { 'active': index === currentPage }]"
+						@click="goToPage(index)"
+					></span>
+				</div>
 			</div>
 		</div>
 
@@ -80,7 +106,125 @@
 </template>
 <!-- https://imgur.com/a/cqa6TPP -->
 <script>
-// No changes needed in the script for mobile optimization
+export default {
+  data() {
+    return {
+      sheetData: [],
+      currentPage: 0,
+      itemsPerPage: 1, // 每頁顯示1個項目
+      touchStartX: 0,
+      touchEndX: 0
+    };
+  },
+  computed: {
+    totalPages() {
+      return Math.max(1, this.sheetData.length);
+    },
+    currentPageData() {
+      if (this.sheetData.length === 0) return [];
+      const currentItem = this.sheetData[this.currentPage];
+      return currentItem ? [currentItem] : [];
+    }
+  },
+  methods: {
+    nextPage() {
+      if (this.currentPage < this.totalPages - 1) {
+        this.currentPage++;
+      }
+    },
+    previousPage() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+      }
+    },
+    goToPage(pageIndex) {
+      this.currentPage = pageIndex;
+    },
+    getAnnouncementTitle(announcement) {
+      // 假設 Google Sheets 第一欄是標題
+      if (Array.isArray(announcement) && announcement.length > 0) {
+        return announcement[0] || '無標題';
+      }
+      return '無標題';
+    },
+    getAnnouncementContent(announcement) {
+      // 假設 Google Sheets 第二欄是內容
+      if (Array.isArray(announcement) && announcement.length > 1) {
+        return announcement[1] || '無內容';
+      }
+      return '無內容';
+    },
+    getAnnouncementDate(announcement) {
+      // 假設 Google Sheets 第三欄是日期
+      if (Array.isArray(announcement) && announcement.length > 2) {
+        return announcement[2] || '';
+      }
+      return '';
+    },
+    handleTouchStart(e) {
+      this.touchStartX = e.touches[0].clientX;
+    },
+    handleTouchEnd(e) {
+      this.touchEndX = e.changedTouches[0].clientX;
+      this.handleSwipe();
+    },
+    handleSwipe() {
+      const swipeThreshold = 50; // 最小滑動距離
+      const diff = this.touchStartX - this.touchEndX;
+      
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // 向左滑動，下一頁
+          this.nextPage();
+        } else {
+          // 向右滑動，上一頁
+          this.previousPage();
+        }
+      }
+    },
+    handleKeydown(e) {
+      if (e.key === 'ArrowLeft') {
+        this.previousPage();
+      } else if (e.key === 'ArrowRight') {
+        this.nextPage();
+      }
+    }
+  },
+  async mounted() {
+    // 使用 Google Sheets API
+    try {
+      const res = await fetch('/api/board');
+      const rawData = await res.json();
+      console.log('原始Google Sheets資料:', rawData);
+      
+      // 處理 Google Sheets 資料結構，跳過第一個Row（標題行）
+      if (Array.isArray(rawData) && rawData.length > 1) {
+        // 跳過第一行（索引0），從第二行開始取資料
+        this.sheetData = rawData.slice(1);
+      } else if (Array.isArray(rawData) && rawData.length === 1) {
+        // 如果只有標題行，使用空陣列
+        this.sheetData = [];
+      } else {
+        // 如果沒有資料，使用空陣列
+        this.sheetData = [];
+      }
+      
+      console.log('處理後的資料（跳過第一行）:', this.sheetData);
+      console.log('總頁數:', this.totalPages);
+    } catch (error) {
+      console.error('Error fetching board data:', error);
+      // 如果API失敗，使用空陣列
+      this.sheetData = [];
+    }
+    
+    // 添加鍵盤導航支持
+    window.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    // 清理事件監聽器
+    window.removeEventListener('keydown', this.handleKeydown);
+  }
+}
 </script>
 <style>
 :root {
@@ -121,40 +265,141 @@
 	bottom: 83px;
 }
 
-.news-title {
-	padding: 20px 0 5px 20px;
-	font-size: 1.5rem;
-	color: #fff;
-	font-family: "JetBrains Mono";
-	font-style: normal;
-	font-weight: 400;
-}
-
 .news-body {
 	width: 100%;
-	height: 80%;
+	height: 100%;
+	position: relative;
+	display: flex;
+	flex-direction: column;
 }
 
-.news-description {
-	padding: 0 0 0 20px;
-	font-size: 1rem;
-	color: #fff;
-	font-family: "JetBrains Mono";
-	font-style: normal;
-	font-weight: 400;
+.news-content {
+	padding: 30px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	user-select: none;
+	height: calc(100% - 60px);
 }
 
-.news-image {
+.announcement-item {
 	width: 100%;
 	height: 100%;
-	object-fit: contain;
-	max-width: 100%;
-	max-height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.announcement-container {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	padding: 0;
+	overflow: hidden;
+}
+
+.announcement-title {
+	color: #fff;
+	font-family: "JetBrains Mono";
+	font-size: 1.8rem;
+	font-weight: 600;
+	margin-bottom: 20px;
+	text-align: left;
+	flex-shrink: 0;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.announcement-content {
+	color: #fff;
+	font-family: "JetBrains Mono";
+	font-size: 1.1rem;
+	font-weight: 400;
+	line-height: 1.6;
+	flex: 1;
+	text-align: left;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	overflow-y: auto;
+	margin-bottom: 60px;
+	padding-right: 10px;
+}
+
+.announcement-date {
+	color: #fff;
+	font-family: "JetBrains Mono";
+	font-size: 1rem;
+	font-weight: 400;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	flex-shrink: 0;
+}
+
+.loading-text {
+	color: #fff;
+	font-family: "JetBrains Mono";
+	font-size: 1rem;
+	text-align: center;
+	margin: auto;
+}
+
+.pagination-dots {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 12px;
+	position: absolute;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+}
+
+.dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background-color: rgba(255, 255, 255, 0.4);
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.dot.active {
+	background-color: white;
+	transform: scale(1.3);
+}
+
+.dot:hover {
+	background-color: rgba(255, 255, 255, 0.6);
+}
+
+
+
+.news-content ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.news-content li {
+	color: #fff;
+	font-family: "JetBrains Mono";
+	font-size: 0.9rem;
+	padding: 8px 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.news-content li:last-child {
+	border-bottom: none;
 }
 
 .Social_Media_Container {
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-start;
 	align-items: center;
 	position: absolute;
 	bottom: 0;
@@ -162,7 +407,7 @@
 	right: 40%;
 	height: 83px;
 	border-top: 2px solid #fff;
-	gap: 3rem;
+	gap: 2rem; /* 固定間距 */
 	padding-left: 1rem;
 }
 
@@ -171,6 +416,8 @@
 	color: #fff;
 	align-items: center;
 	gap: 0.5rem;
+	min-width: 150px; /* 固定最小寬度 */
+	justify-content: flex-start;
 }
 
 .Social_Media_Item svg {
@@ -208,25 +455,41 @@
 	}
 
 	.news-card {
-		position: static; /* Remove absolute positioning */
+		position: static;
 		top: 0;
 		bottom: 0;
-		width: 90%; /* Full width */
+		width: 90%;
 		position: relative;
 		left: 50%;
 		transform: translateX(-50%);
-		margin: 20px 0; /* Add vertical spacing */
+		margin: 20px 0;
 		height: calc((100% - var(--social-media-container-height)) / 2);
 	}
 
-	.news-title {
-		font-size: 1.2rem; /* Smaller title */
-		padding: 15px 0 5px 15px; /* Adjust padding */
+	.news-content {
+		padding: 20px;
+		height: calc(100% - 40px);
 	}
 
-	.news-description {
-		font-size: 0.9rem; /* Smaller text */
-		padding: 0 0 15px 15px; /* Adjust padding */
+	.announcement-title {
+		font-size: 1.5rem;
+		margin-bottom: 15px;
+	}
+
+	.announcement-content {
+		font-size: 1rem;
+		line-height: 1.6;
+		margin-bottom: 50px;
+		padding-right: 5px;
+	}
+
+	.announcement-date {
+		font-size: 0.9rem;
+		bottom: 0;
+	}
+
+	.pagination-dots {
+		bottom: 15px;
 	}
 
 	.Social_Media_Container {

@@ -42,6 +42,22 @@ body {
 	border: none;
 	/* 禁止滾動條 */
 }
+
+/* 隱藏滾動條但保持滾動功能 */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+	width: 0px;
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: transparent;
+}
+
+/* For Firefox */
+* {
+	scrollbar-width: none;
+}
 </style>
 <style scoped>
 /* 固定線條的透明容器 */
@@ -117,6 +133,14 @@ body {
 	/* overflow-x: scroll; */
 	overflow-x: hidden;
 	overflow-y: scroll;
+	/* 隱藏滾動條樣式 */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.RouterView_Container::-webkit-scrollbar {
+	width: 0px;
+	background: transparent; /* Chrome/Safari/Webkit */
 }
 @media (max-width: 768px) {
 	.Left_Line {

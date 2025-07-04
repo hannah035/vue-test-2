@@ -1,10 +1,8 @@
 import axios from "axios"
-// This is for local development
-// If you are using a different port or domain, change the baseUrl accordingly
-const baseUrl = "http://localhost:3000/api"
 
-// This is for production
+// const baseUrl = '/api/books'
 // const baseUrl = "/api"
+const baseUrl = "http://localhost:3000/api"
 
 
 export default {
