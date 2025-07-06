@@ -29,6 +29,9 @@ function toggleMobileMenu() {
 				<router-link to="/reviews" @click="toggleMobileMenu"
 					>Reviews</router-link
 				>
+				<router-link to="/reviews2" @click="toggleMobileMenu"
+					>Review2</router-link
+				>
 				<router-link to="/books" @click="toggleMobileMenu"
 					>Books</router-link
 				>
