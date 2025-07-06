@@ -96,7 +96,7 @@
 	</div>
 </template>
 
-<style lang="css">
+<style lang="css" scoped>
 :root {
 	--picker-height: 50px;
 	--shown-pickers: 3;
@@ -217,7 +217,7 @@ p {
 .cover {
 	position: absolute;
 	width: 100%;
-	height: var(--picker-height);
+	/* height: calc(var(--picker-height) / 2); */
 	z-index: 1;
 	pointer-events: none;
 }
@@ -254,6 +254,7 @@ p {
 	overflow-x: hidden;
 	position: relative;
 	scroll-snap-type: y mandatory;
+	
 }
 .picker-scroller {
 	display: flex;
@@ -289,7 +290,7 @@ p {
 </style>
 
 <script>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue"
 
 export default {
 	setup() {
@@ -324,7 +325,7 @@ export default {
 				title: "Section 6",
 				content: "This is the content for section 6. ".repeat(50),
 			},
-		]);
+		])
 		const timePeriodList = ref([
 			"Last 24 hours",
 			"Last 7 days",
@@ -333,72 +334,68 @@ export default {
 			"Last 180 days",
 			"Last 365 days",
 			"All time",
-		]);
-		let selectedPeriod = ref("Last 30 days");
+		])
+		let selectedPeriod = ref("Last 30 days")
 
-		const contentContainer = ref(null);
-		const pickerContainer = ref(null);
-		const pickerScrollerContainer = ref(null);
-		const activeSection = ref(1);
-		const selectedSection = ref("Section 1");
+		const contentContainer = ref(null)
+		const pickerContainer = ref(null)
+		const pickerScrollerContainer = ref(null)
+		const activeSection = ref(1)
+		const selectedSection = ref("Section 1")
 		// let scrollTimeout = null;
-		let isProgrammaticScroll = false;
-		let testSection = ref("Section 1");
+		let isProgrammaticScroll = false
+		let testSection = ref("Section 1")
 		const testFunction = () => {
-			console.log("test function");
-		};
+			console.log("test function")
+		}
 		const scrollToSection = (sectionId) => {
-			isProgrammaticScroll = true;
+			isProgrammaticScroll = true
 			const sectionElement = document.getElementById(
 				`section-${sectionId}`
-			);
+			)
 			if (sectionElement && contentContainer.value) {
 				contentContainer.value.scrollTo({
 					top: sectionElement.offsetTop + 50,
 					behavior: "smooth",
-				});
-				activeSection.value = sectionId;
-				const section = sections.value.find((s) => s.id === sectionId);
+				})
+				activeSection.value = sectionId
+				const section = sections.value.find((s) => s.id === sectionId)
 				if (section) {
-					selectedSection.value = section.title;
+					selectedSection.value = section.title
 				}
 			}
 			setTimeout(() => {
-				isProgrammaticScroll = false;
-			}, 1000);
-			syncPickerScroll(sectionId);
-		};
+				isProgrammaticScroll = false
+			}, 1000)
+			syncPickerScroll(sectionId)
+		}
 
 		const handleContentScroll = () => {
-			if (isProgrammaticScroll) return;
+			if (isProgrammaticScroll) return
 
-			const scrollTop = contentContainer.value.scrollTop;
-			let currentSection = sections.value[0].id;
+			const scrollTop = contentContainer.value.scrollTop
+			let currentSection = sections.value[0].id
 
 			for (const section of sections.value) {
-				const element = document.getElementById(
-					`section-${section.id}`
-				);
+				const element = document.getElementById(`section-${section.id}`)
 				if (element && element.offsetTop <= scrollTop + 100) {
-					currentSection = section.id;
+					currentSection = section.id
 				}
 			}
 
-			activeSection.value = currentSection;
-			const section = sections.value.find((s) => s.id === currentSection);
+			activeSection.value = currentSection
+			const section = sections.value.find((s) => s.id === currentSection)
 			if (section) {
-				selectedSection.value = section.title;
+				selectedSection.value = section.title
 			}
-			syncPickerScroll(currentSection);
-		};
+			syncPickerScroll(currentSection)
+		}
 
 		const syncPickerScroll = (sectionId) => {
-			isProgrammaticScroll = true;
+			isProgrammaticScroll = true
 			// alert(sectionId);
-			const buttonElement = document.getElementById(
-				`button-${sectionId}`
-			);
-			if (buttonElement == null) return;
+			const buttonElement = document.getElementById(`button-${sectionId}`)
+			if (buttonElement == null) return
 			if (buttonElement && pickerScrollerContainer.value) {
 				pickerScrollerContainer.value.scrollTo({
 					top:
@@ -406,43 +403,42 @@ export default {
 						pickerScrollerContainer.value.offsetTop -
 						50,
 					behavior: "smooth",
-				});
+				})
 			}
 			// setTimeout(() => {
 			// 	isProgrammaticScroll = false;
 			// }, 1000);
-		};
+		}
 
 		const handlePickerScroll = async () => {
-			if (isProgrammaticScroll) return;
+			if (isProgrammaticScroll) return
 
 			// const scrollTop = pickerContainer.value.scrollTop;
-			let currentSection = sections.value[0].id;
-			const containerRect = pickerContainer.value.getBoundingClientRect();
-			const containerCenter =
-				containerRect.top + containerRect.height / 2;
-			const containerHeight = containerRect.height;
-			let shortestDistance = Infinity;
+			let currentSection = sections.value[0].id
+			const containerRect = pickerContainer.value.getBoundingClientRect()
+			const containerCenter = containerRect.top + containerRect.height / 2
+			const containerHeight = containerRect.height
+			let shortestDistance = Infinity
 			for (const section of sections.value) {
-				const button = document.getElementById(`button-${section.id}`);
+				const button = document.getElementById(`button-${section.id}`)
 
-				const buttonRect = button.getBoundingClientRect();
-				const buttonCenter = buttonRect.top + buttonRect.height / 2;
+				const buttonRect = button.getBoundingClientRect()
+				const buttonCenter = buttonRect.top + buttonRect.height / 2
 				const relativePos =
-					(buttonCenter - containerCenter) / (containerHeight / 2);
+					(buttonCenter - containerCenter) / (containerHeight / 2)
 
 				// Apply the rotation based on the relative position
-				const distance = Math.abs(relativePos);
+				const distance = Math.abs(relativePos)
 				if (distance <= shortestDistance) {
-					shortestDistance = distance;
-					currentSection = section.id;
+					shortestDistance = distance
+					currentSection = section.id
 				}
 			}
-			testSection.value = currentSection;
+			testSection.value = currentSection
 			for (const section of sections.value) {
-				const button = document.getElementById(`button-${section.id}`);
+				const button = document.getElementById(`button-${section.id}`)
 				if (section.id === currentSection) {
-					button.classList.add("picker-active");
+					button.classList.add("picker-active")
 					// Scroll to the section in the content container
 					// This should be a async operation
 					// TODO
@@ -452,60 +448,59 @@ export default {
 					// }, 1000);
 					// syncPickerScroll(section.id);
 				} else {
-					button.classList.remove("picker-active");
+					button.classList.remove("picker-active")
 				}
 			}
-		};
+		}
 
 		const updateRotations = () => {
-			if (!pickerContainer.value) return;
+			if (!pickerContainer.value) return
 			// if (isProgrammaticScroll) return;
-			handlePickerScroll();
+			handlePickerScroll()
 
-			const containerRect = pickerContainer.value.getBoundingClientRect();
-			const containerCenter =
-				containerRect.top + containerRect.height / 2;
-			const containerHeight = containerRect.height;
-			const divs = pickerContainer.value.querySelectorAll(".picker");
+			const containerRect = pickerContainer.value.getBoundingClientRect()
+			const containerCenter = containerRect.top + containerRect.height / 2
+			const containerHeight = containerRect.height
+			const divs = pickerContainer.value.querySelectorAll(".picker")
 
 			divs.forEach((div) => {
-				const divRect = div.getBoundingClientRect();
-				const divCenter = divRect.top + divRect.height / 2;
+				const divRect = div.getBoundingClientRect()
+				const divCenter = divRect.top + divRect.height / 2
 				const relativePos =
-					(divCenter - containerCenter) / (containerHeight / 2);
+					(divCenter - containerCenter) / (containerHeight / 2)
 
 				// Calculate the distance from the center of the container
 				// and update the selectedDiv if it's the closest
 				// Also apply the rotation based on the relative position
-				const maxSin = Math.sin(Math.PI / 4); // Max rotation angle in radians
-				const angle = Math.asin(relativePos * maxSin) * (180 / Math.PI); // Convert to degrees
-				div.style.transform = `rotate3d(1, 0, 0, ${angle}deg)`;
-			});
+				const maxSin = Math.sin(Math.PI / 4) // Max rotation angle in radians
+				const angle = Math.asin(relativePos * maxSin) * (180 / Math.PI) // Convert to degrees
+				div.style.transform = `rotate3d(1, 0, 0, ${angle}deg)`
+			})
 			// if (scrollTimeout) clearTimeout(scrollTimeout);
 			// scrollTimeout = setTimeout(() => {
 			// 	console.log("Custom scrollend triggered!");
 			// 	testFunction();
 			// 	scrollToSection(testSection.value);
 			// }, 100);
-		};
+		}
 		const toggleDropdown = () => {
-			const dropdownContent = document.getElementById("dropdown-content");
-			dropdownContent.classList.toggle("expand");
-		};
+			const dropdownContent = document.getElementById("dropdown-content")
+			dropdownContent.classList.toggle("expand")
+		}
 		const selectPeriod = (period) => {
-			selectedPeriod = period;
-			toggleDropdown();
-		};
+			selectedPeriod = period
+			toggleDropdown()
+		}
 
 		onMounted(() => {
-			scrollToSection(1);
-			updateRotations();
-			window.addEventListener("resize", updateRotations);
-		});
+			scrollToSection(1)
+			updateRotations()
+			window.addEventListener("resize", updateRotations)
+		})
 
 		onUnmounted(() => {
-			window.removeEventListener("resize", updateRotations);
-		});
+			window.removeEventListener("resize", updateRotations)
+		})
 
 		return {
 			sections,
@@ -524,7 +519,7 @@ export default {
 			selectedPeriod,
 			toggleDropdown,
 			selectPeriod,
-		};
+		}
 	},
-};
+}
 </script>
