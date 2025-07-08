@@ -18,9 +18,23 @@ export default {
 			})
 	},
 	post(route, data) {
-		return axios.post(`${baseUrl}/${route}`,  data )
+		return axios
+			.post(`${baseUrl}/${route}`, data)
+			.then((res) => {
+				return res.data
+			})
+			.catch((err) => {
+				throw err
+			})
 	},
 	delete(route, key) {
-		return axios.delete(`${baseUrl}/${route}`, { data: { key } })
+		return axios
+			.delete(`${baseUrl}/${route}`, { data: { key } })
+			.then((res) => {
+				return res.data
+			})
+			.catch((err) => {
+				throw err
+			})
 	},
 }

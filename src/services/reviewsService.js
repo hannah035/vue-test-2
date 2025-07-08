@@ -43,5 +43,16 @@ export default {
       console.error('Error creating comment:', error)
       throw error
     }
+  },
+
+  // 用戶登入
+  async login(email, password) {
+    try {
+      const response = await api.post('reviews/login', { email, password })
+      return response
+    } catch (error) {
+      console.error('Error during login:', error)
+      throw error
+    }
   }
 }

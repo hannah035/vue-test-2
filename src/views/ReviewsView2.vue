@@ -49,6 +49,30 @@
 						<span class="author">{{ currentReview.author }}</span>
 						<span class="date">{{ currentReview.date }}</span>
 					</div>
+					
+					<!-- 回覆按鈕 (只有登入用戶可見) -->
+					<div v-if="isLoggedIn" class="action-buttons">
+						<button @click="toggleReplyForm" class="reply-btn">
+							{{ showReplyForm ? 'Cancel Reply' : 'Reply to Review' }}
+						</button>
+					</div>
+				</div>
+
+				<!-- 回覆評論表單 -->
+				<div v-if="showReplyForm && isLoggedIn" class="reply-form">
+					<h4>Reply to this review</h4>
+					<textarea 
+						v-model="commentContent" 
+						placeholder="Write your comment..."
+						class="reply-textarea"
+						:disabled="submittingReply"
+					></textarea>
+					<div class="form-buttons">
+						<button @click="submitComment" :disabled="!commentContent.trim() || submittingReply" class="submit-btn">
+							{{ submittingReply ? 'Posting...' : 'Post Comment' }}
+						</button>
+						<button @click="cancelReply" class="cancel-btn">Cancel</button>
+					</div>
 				</div>
 
 				<!-- Navigation Arrows -->
@@ -58,6 +82,52 @@
 				<button class="nav-arrow nav-right" @click="nextReview" :disabled="currentIndex === reviews.length - 1">
 					&#8250;
 				</button>
+			</div>
+
+			<!-- 評論回覆區域 -->
+			<div v-if="currentReview.comments && currentReview.comments.length > 0" class="comments-section">
+				<h3>Comments</h3>
+				<div v-for="comment in currentReview.comments" :key="comment.id" class="comment-item">
+					<div class="comment-header">
+						<span class="comment-author">{{ comment.author }}</span>
+						<span class="comment-date">{{ comment.date }}</span>
+					</div>
+					<div class="comment-content">{{ comment.content }}</div>
+					
+					<!-- 回覆按鈕 (只有登入用戶可見) -->
+					<div v-if="isLoggedIn" class="comment-actions">
+						<button @click="toggleCommentReply(comment.id)" class="reply-btn small">
+							{{ showCommentReply === comment.id ? 'Cancel' : 'Reply' }}
+						</button>
+					</div>
+					
+					<!-- 回覆評論表單 -->
+					<div v-if="showCommentReply === comment.id && isLoggedIn" class="reply-form small">
+						<textarea 
+							v-model="replyContent" 
+							placeholder="Write your reply..."
+							class="reply-textarea"
+							:disabled="submittingReply"
+						></textarea>
+						<div class="form-buttons">
+							<button @click="submitReply(comment.id)" :disabled="!replyContent.trim() || submittingReply" class="submit-btn">
+								{{ submittingReply ? 'Posting...' : 'Post Reply' }}
+							</button>
+							<button @click="cancelCommentReply" class="cancel-btn">Cancel</button>
+						</div>
+					</div>
+					
+					<!-- 顯示回覆 -->
+					<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
+						<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
+							<div class="reply-header">
+								<span class="reply-author">{{ reply.author }}</span>
+								<span class="reply-date">{{ reply.date }}</span>
+							</div>
+							<div class="reply-content">{{ reply.content }}</div>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<!-- Bottom List -->
@@ -76,13 +146,72 @@
 					<div class="item-content">
 						{{ review.content }}
 					</div>
-					<div class="nested-item" v-if="review.nested">
-						<div class="nested-header">
-							<span class="nested-author">{{ review.nested.author }}</span>
-							<span class="nested-date">{{ review.nested.date }}</span>
+					
+					<!-- 回覆按鈕 (只有登入用戶可見) -->
+					<div v-if="isLoggedIn" class="item-action-buttons">
+						<button @click.stop="toggleReviewReply(review.id)" class="reply-btn small">
+							{{ showReviewReply === review.id ? 'Cancel' : 'Reply to Review' }}
+						</button>
+					</div>
+					
+					<!-- 回覆表單 -->
+					<div v-if="showReviewReply === review.id && isLoggedIn" class="reply-form small">
+						<textarea 
+							v-model="reviewReplyContent" 
+							placeholder="Write your reply to this review..."
+							class="reply-textarea"
+							:disabled="submittingReply"
+						></textarea>
+						<div class="form-buttons">
+							<button @click="submitReviewReply(review.id)" :disabled="!reviewReplyContent.trim() || submittingReply" class="submit-btn">
+								{{ submittingReply ? 'Posting...' : 'Post Reply' }}
+							</button>
+							<button @click="cancelReviewReply" class="cancel-btn">Cancel</button>
 						</div>
-						<div class="nested-content">
-							{{ review.nested.content }}
+					</div>
+					
+					<!-- 顯示該評論的回覆 -->
+					<div v-if="review.comments && review.comments.length > 0" class="review-comments">
+						<div v-for="comment in review.comments" :key="comment.id" class="review-comment-item">
+							<div class="comment-header">
+								<span class="comment-author">{{ comment.author }}</span>
+								<span class="comment-date">{{ comment.date }}</span>
+							</div>
+							<div class="comment-content">{{ comment.content }}</div>
+							
+							<!-- 回覆評論按鈕 (只有登入用戶可見) -->
+							<div v-if="isLoggedIn" class="comment-actions">
+								<button @click.stop="toggleCommentReplyInList(comment.id)" class="reply-btn tiny">
+									{{ showCommentReplyInList === comment.id ? 'Cancel' : 'Reply' }}
+								</button>
+							</div>
+							
+							<!-- 回覆評論表單 -->
+							<div v-if="showCommentReplyInList === comment.id && isLoggedIn" class="reply-form tiny">
+								<textarea 
+									v-model="commentReplyContent" 
+									placeholder="Write your reply..."
+									class="reply-textarea"
+									:disabled="submittingReply"
+								></textarea>
+								<div class="form-buttons">
+									<button @click="submitCommentReplyInList(review.id, comment.id)" :disabled="!commentReplyContent.trim() || submittingReply" class="submit-btn">
+										{{ submittingReply ? 'Posting...' : 'Post Reply' }}
+									</button>
+									<button @click="cancelCommentReplyInList" class="cancel-btn">Cancel</button>
+								</div>
+							</div>
+							
+							<!-- 顯示回覆 -->
+							<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
+								<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
+									<div class="reply-header">
+										<span class="reply-author">{{ reply.author }}</span>
+										<span class="reply-date">{{ reply.date }}</span>
+									</div>
+									<div class="reply-content">{{ reply.content }}</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -108,7 +237,20 @@ export default {
 			tags: [],
 			reviews: [],
 			loading: true,
-			error: null
+			error: null,
+			// 登入狀態
+			isLoggedIn: false,
+			currentUser: null,
+			// 回覆功能
+			showReplyForm: false,
+			showCommentReply: null, // 存儲特定評論的 ID (主卡片區域)
+			showReviewReply: null, // 存儲特定評論的 ID (列表區域)
+			showCommentReplyInList: null, // 存儲列表區域評論回覆的 ID
+			replyContent: '',
+			commentContent: '',
+			reviewReplyContent: '', // 列表區域評論回覆內容
+			commentReplyContent: '', // 列表區域評論的回覆內容
+			submittingReply: false
 		}
 	},
 	computed: {
@@ -117,6 +259,33 @@ export default {
 		}
 	},
 	methods: {
+		// 檢查登入狀態
+		checkLoginStatus() {
+			const isLoggedIn = localStorage.getItem('isLoggedIn')
+			const userData = localStorage.getItem('currentUser')
+			
+			console.log('Checking login status:')
+			console.log('- isLoggedIn:', isLoggedIn)
+			console.log('- userData:', userData)
+			
+			if (isLoggedIn === 'true' && userData) {
+				try {
+					this.currentUser = JSON.parse(userData)
+					this.isLoggedIn = true
+					console.log('Login status: true, currentUser:', this.currentUser)
+				} catch (error) {
+					console.error('Error parsing user data:', error)
+					this.isLoggedIn = false
+					this.currentUser = null
+					console.log('Login status: false (parse error)')
+				}
+			} else {
+				this.isLoggedIn = false
+				this.currentUser = null
+				console.log('Login status: false (no valid login data)')
+			}
+		},
+
 		async fetchReviews() {
 			try {
 				this.loading = true
@@ -153,14 +322,17 @@ export default {
 				this.currentIndex++
 			}
 		},
+		
 		previousReview() {
 			if (this.currentIndex > 0) {
 				this.currentIndex--
 			}
 		},
+		
 		selectReview(index) {
 			this.currentIndex = index
 		},
+		
 		sortReviews() {
 			switch (this.sortBy) {
 				case "date":
@@ -173,9 +345,244 @@ export default {
 					this.reviews.sort((a, b) => b.rating - a.rating)
 					break
 			}
-		}
+		},
+
+		// 切換回覆評論表單
+		toggleReplyForm() {
+			this.showReplyForm = !this.showReplyForm
+			if (!this.showReplyForm) {
+				this.commentContent = ''
+			}
+		},
+
+		// 取消回覆評論
+		cancelReply() {
+			this.showReplyForm = false
+			this.commentContent = ''
+		},
+
+		// 提交評論
+		async submitComment() {
+			if (!this.commentContent.trim() || !this.isLoggedIn) {
+				return
+			}
+
+			try {
+				this.submittingReply = true
+				const commentData = {
+					userId: this.currentUser._id,
+					content: this.commentContent.trim(),
+					parentId: null // 主評論，沒有父評論
+				}
+
+				const response = await reviewsService.createComment(this.currentReview.id, commentData)
+				
+				if (response.success) {
+					// 重新獲取評論列表以顯示新的評論
+					await this.fetchReviews()
+					
+					// 清空表單
+					this.commentContent = ''
+					this.showReplyForm = false
+					
+					// 顯示成功訊息
+					alert('Comment posted successfully!')
+				} else {
+					alert('Failed to post comment')
+				}
+			} catch (error) {
+				console.error('Error posting comment:', error)
+				alert('Failed to post comment')
+			} finally {
+				this.submittingReply = false
+			}
+		},
+
+		// 切換評論回覆表單
+		toggleCommentReply(commentId) {
+			if (this.showCommentReply === commentId) {
+				this.showCommentReply = null
+				this.replyContent = ''
+			} else {
+				this.showCommentReply = commentId
+				this.replyContent = ''
+			}
+		},
+
+		// 取消評論回覆
+		cancelCommentReply() {
+			this.showCommentReply = null
+			this.replyContent = ''
+		},
+
+		// 提交回覆
+		async submitReply(commentId) {
+			if (!this.replyContent.trim() || !this.isLoggedIn) {
+				return
+			}
+
+			try {
+				this.submittingReply = true
+				const replyData = {
+					userId: this.currentUser._id,
+					content: this.replyContent.trim(),
+					parentId: commentId // 回覆特定評論
+				}
+
+				const response = await reviewsService.createComment(this.currentReview.id, replyData)
+				
+				if (response.success) {
+					// 重新獲取評論列表以顯示新的回覆
+					await this.fetchReviews()
+					
+					// 清空表單
+					this.replyContent = ''
+					this.showCommentReply = null
+					
+					// 顯示成功訊息
+					alert('Reply posted successfully!')
+				} else {
+					alert('Failed to post reply')
+				}
+			} catch (error) {
+				console.error('Error posting reply:', error)
+				alert('Failed to post reply')
+			} finally {
+				this.submittingReply = false
+			}
+		},
+
+		// 列表區域 - 切換評論回覆表單
+		toggleReviewReply(reviewId) {
+			if (this.showReviewReply === reviewId) {
+				this.showReviewReply = null
+				this.reviewReplyContent = ''
+			} else {
+				this.showReviewReply = reviewId
+				this.reviewReplyContent = ''
+			}
+		},
+
+		// 列表區域 - 取消評論回覆
+		cancelReviewReply() {
+			this.showReviewReply = null
+			this.reviewReplyContent = ''
+		},
+
+		// 列表區域 - 提交評論回覆
+		async submitReviewReply(reviewId) {
+			if (!this.reviewReplyContent.trim() || !this.isLoggedIn) {
+				return
+			}
+
+			try {
+				this.submittingReply = true
+				const commentData = {
+					userId: this.currentUser._id,
+					content: this.reviewReplyContent.trim(),
+					parentId: null // 主評論，沒有父評論
+				}
+
+				const response = await reviewsService.createComment(reviewId, commentData)
+				
+				if (response.success) {
+					// 重新獲取評論列表以顯示新的評論
+					await this.fetchReviews()
+					
+					// 清空表單
+					this.reviewReplyContent = ''
+					this.showReviewReply = null
+					
+					// 顯示成功訊息
+					alert('Reply posted successfully!')
+				} else {
+					alert('Failed to post reply')
+				}
+			} catch (error) {
+				console.error('Error posting reply:', error)
+				alert('Failed to post reply')
+			} finally {
+				this.submittingReply = false
+			}
+		},
+
+		// 列表區域 - 切換評論的回覆表單
+		toggleCommentReplyInList(commentId) {
+			if (this.showCommentReplyInList === commentId) {
+				this.showCommentReplyInList = null
+				this.commentReplyContent = ''
+			} else {
+				this.showCommentReplyInList = commentId
+				this.commentReplyContent = ''
+			}
+		},
+
+		// 列表區域 - 取消評論的回覆
+		cancelCommentReplyInList() {
+			this.showCommentReplyInList = null
+			this.commentReplyContent = ''
+		},
+
+		// 列表區域 - 提交評論的回覆
+		async submitCommentReplyInList(reviewId, commentId) {
+			if (!this.commentReplyContent.trim() || !this.isLoggedIn) {
+				return
+			}
+
+			try {
+				this.submittingReply = true
+				const replyData = {
+					userId: this.currentUser._id,
+					content: this.commentReplyContent.trim(),
+					parentId: commentId // 回覆特定評論
+				}
+
+				const response = await reviewsService.createComment(reviewId, replyData)
+				
+				if (response.success) {
+					// 重新獲取評論列表以顯示新的回覆
+					await this.fetchReviews()
+					
+					// 清空表單
+					this.commentReplyContent = ''
+					this.showCommentReplyInList = null
+					
+					// 顯示成功訊息
+					alert('Reply posted successfully!')
+				} else {
+					alert('Failed to post reply')
+				}
+			} catch (error) {
+				console.error('Error posting reply:', error)
+				alert('Failed to post reply')
+			} finally {
+				this.submittingReply = false
+			}
+		},
+
+		// 處理 localStorage 變化
+		handleStorageChange(event) {
+			if (event.key === 'isLoggedIn' || event.key === 'currentUser') {
+				this.checkLoginStatus()
+			}
+		},
+
+		// 輔助方法：獲取 localStorage 項目（用於除錯）
+		getLocalStorageItem(key) {
+			try {
+				return localStorage.getItem(key) || 'null'
+			} catch (error) {
+				return 'error'
+			}
+		},
 	},
 	mounted() {
+		// 檢查登入狀態
+		this.checkLoginStatus()
+		
+		// 監聽 localStorage 變化（當用戶在其他頁面登入/登出時）
+		window.addEventListener('storage', this.handleStorageChange)
+		
 		// 初始化載入資料
 		this.fetchReviews()
 		this.fetchTags()
@@ -188,7 +595,12 @@ export default {
 				this.nextReview()
 			}
 		})
-	}
+	},
+
+	beforeUnmount() {
+		// 清除事件監聽器
+		window.removeEventListener('storage', this.handleStorageChange)
+	},
 }
 </script>
 
@@ -433,6 +845,320 @@ export default {
 	color: #bbb;
 	font-size: 16px;
 	line-height: 1.4;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+/* 回覆功能樣式 */
+.action-buttons {
+	margin-top: 15px;
+	display: flex;
+	gap: 10px;
+}
+
+.reply-btn {
+	background-color: #444;
+	color: #fff;
+	border: 1px solid #666;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 14px;
+	transition: background-color 0.3s;
+}
+
+.reply-btn:hover {
+	background-color: #555;
+}
+
+.reply-btn.small {
+	padding: 5px 10px;
+	font-size: 12px;
+}
+
+.reply-btn.tiny {
+	padding: 3px 8px;
+	font-size: 11px;
+}
+
+.reply-form {
+	margin-top: 15px;
+	padding: 15px;
+	background-color: #2a2a2a;
+	border-radius: 8px;
+	border: 1px solid #444;
+}
+
+.reply-form.small {
+	margin-top: 10px;
+	padding: 10px;
+}
+
+.reply-form.tiny {
+	margin-top: 8px;
+	padding: 8px;
+}
+
+.reply-form h4 {
+	margin: 0 0 10px 0;
+	color: #fff;
+	font-size: 16px;
+}
+
+.reply-textarea {
+	width: 100%;
+	min-height: 80px;
+	background-color: #333;
+	color: #fff;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 10px;
+	font-family: inherit;
+	font-size: 14px;
+	resize: vertical;
+	box-sizing: border-box;
+}
+
+.reply-textarea:focus {
+	outline: none;
+	border-color: #777;
+}
+
+.reply-textarea:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.form-buttons {
+	display: flex;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.submit-btn {
+	background-color: #007acc;
+	color: #fff;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 14px;
+	transition: background-color 0.3s;
+}
+
+.submit-btn:hover:not(:disabled) {
+	background-color: #0056b3;
+}
+
+.submit-btn:disabled {
+	background-color: #555;
+	cursor: not-allowed;
+}
+
+.cancel-btn {
+	background-color: #666;
+	color: #fff;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 14px;
+	transition: background-color 0.3s;
+}
+
+.cancel-btn:hover {
+	background-color: #777;
+}
+
+/* 評論區域樣式 */
+.comments-section {
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 1px solid #444;
+}
+
+.comments-section h3 {
+	margin: 0 0 20px 0;
+	color: #fff;
+	font-size: 18px;
+}
+
+.comment-item {
+	margin-bottom: 20px;
+	padding: 15px;
+	background-color: #2a2a2a;
+	border-radius: 8px;
+	border: 1px solid #444;
+}
+
+.comment-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.comment-author {
+	font-weight: bold;
+	color: #fff;
+	font-size: 14px;
+}
+
+.comment-date {
+	color: #ccc;
+	font-size: 14px;
+}
+
+.comment-content {
+	color: #ddd;
+	line-height: 1.4;
+	margin-bottom: 10px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.comment-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.replies-section {
+	margin-top: 15px;
+	padding-left: 20px;
+	border-left: 2px solid #555;
+}
+
+.reply-item {
+	margin-bottom: 15px;
+	padding: 10px;
+	background-color: #222;
+	border-radius: 6px;
+}
+
+.reply-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+
+.reply-author {
+	font-weight: bold;
+	color: #ccc;
+	font-size: 13px;
+}
+
+.reply-date {
+	color: #999;
+	font-size: 13px;
+}
+
+.reply-content {
+	color: #bbb;
+	line-height: 1.4;
+	font-size: 14px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+/* 列表區域回覆功能樣式 */
+.item-action-buttons {
+	margin-top: 10px;
+	display: flex;
+	gap: 5px;
+}
+
+.reply-form.tiny {
+	margin-top: 8px;
+	padding: 8px;
+}
+
+.review-comments {
+	margin-top: 15px;
+	padding: 10px;
+	background-color: #1a1a1a;
+	border-radius: 6px;
+	border: 1px solid #333;
+}
+
+.review-comment-item {
+	margin-bottom: 12px;
+	padding: 8px;
+	background-color: #252525;
+	border-radius: 4px;
+	border: 1px solid #333;
+}
+
+.review-comment-item:last-child {
+	margin-bottom: 0;
+}
+
+.review-comment-item .comment-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
+
+.review-comment-item .comment-author {
+	font-weight: bold;
+	color: #ddd;
+	font-size: 12px;
+}
+
+.review-comment-item .comment-date {
+	color: #aaa;
+	font-size: 12px;
+}
+
+.review-comment-item .comment-content {
+	color: #ccc;
+	line-height: 1.3;
+	margin-bottom: 8px;
+	font-size: 13px;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.review-comment-item .comment-actions {
+	display: flex;
+	gap: 5px;
+}
+
+.review-comment-item .replies-section {
+	margin-top: 10px;
+	padding-left: 15px;
+	border-left: 2px solid #444;
+}
+
+.review-comment-item .reply-item {
+	margin-bottom: 8px;
+	padding: 6px;
+	background-color: #1f1f1f;
+	border-radius: 3px;
+}
+
+.review-comment-item .reply-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 4px;
+}
+
+.review-comment-item .reply-author {
+	font-weight: bold;
+	color: #bbb;
+	font-size: 11px;
+}
+
+.review-comment-item .reply-date {
+	color: #888;
+	font-size: 11px;
+}
+
+.review-comment-item .reply-content {
+	color: #aaa;
+	line-height: 1.3;
+	font-size: 12px;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 }

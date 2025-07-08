@@ -37,6 +37,11 @@ const routes = [
 		name: "About",
 		component: () => import("../views/AboutView.vue"), // Lazy loading
 	},
+	{
+		path: "/join-us",
+		name: "JoinUs",
+		component: () => import("../views/JoinUsView.vue"), // Lazy loading
+	},
 ]
 
 const router = createRouter({

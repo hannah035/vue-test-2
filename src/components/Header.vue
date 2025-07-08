@@ -73,7 +73,7 @@ function toggleMobileMenu() {
 						/>
 					</svg>
 				</div>
-				<a href="#join_us" @click="toggleMobileMenu">Join Us</a>
+				<router-link to="/join-us" @click="toggleMobileMenu">Join Us</router-link>
 			</div>
 		</div>
 	</div>
