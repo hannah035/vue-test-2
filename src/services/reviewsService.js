@@ -38,7 +38,7 @@ export default {
   async createComment(reviewId, commentData) {
     try {
       const response = await api.post(`/reviews/${reviewId}/comments`, commentData)
-      return response.data
+      return response
     } catch (error) {
       console.error('Error creating comment:', error)
       throw error

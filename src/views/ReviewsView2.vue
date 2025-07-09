@@ -210,6 +210,7 @@
 										<span class="reply-date">{{ reply.date }}</span>
 									</div>
 									<div class="reply-content">{{ reply.content }}</div>
+									<!-- TODO: 回覆按鈕 (只有登入用戶可見) -->
 								</div>
 							</div>
 						</div>
@@ -768,6 +769,9 @@ export default {
 	flex-direction: column;
 	gap: 15px;
 	margin-bottom: 50px;
+
+	/* TODO: uncomment the line below to show all reviews */
+	display: none;
 }
 
 .review-item {
