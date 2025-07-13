@@ -309,47 +309,9 @@ import { ref, onMounted, onUnmounted } from "vue"
 
 export default {
 	setup() {
-		const sections = ref([
-			{
-				id: 1,
-				title: "Section 1",
-				content: "This is the content for section 1. ".repeat(50),
-			},
-			{
-				id: 2,
-				title: "Section 2",
-				content: "This is the content for section 2. ".repeat(50),
-			},
-			{
-				id: 3,
-				title: "Section 3",
-				content: "This is the content for section 3. ".repeat(50),
-			},
-			{
-				id: 4,
-				title: "Section 4",
-				content: "This is the content for section 4. ".repeat(50),
-			},
-			{
-				id: 5,
-				title: "Section 5",
-				content: "This is the content for section 5. ".repeat(50),
-			},
-			{
-				id: 6,
-				title: "Section 6",
-				content: "This is the content for section 6. ".repeat(50),
-			},
-		])
-		const timePeriodList = ref([
-			"114-1",
-			"113-2",
-			"113-1",
-			"112-2",
-			"112-1",
-			"111-2",
-			"111-1",
-		])
+		const sections = ref([])
+		const allEventsData = ref([])
+		const timePeriodList = ref([])
 		let selectedPeriod = ref("114-1")
 
 		const contentContainer = ref(null)
@@ -360,9 +322,7 @@ export default {
 		let scrollTimeout = null;
 		let isProgrammaticScroll = false
 		let testSection = ref("Section 1")
-		const testFunction = () => {
-			alert("Custom scrollend triggered!")
-		}
+		
 		const scrollToSection = (sectionId) => {
 			isProgrammaticScroll = true
 			const sectionElement = document.getElementById(
@@ -505,28 +465,116 @@ export default {
 		const selectPeriod = (period) => {
 			selectedPeriod.value = period
 			toggleDropdown()
+			// 當選擇學期時，更新顯示的 sections
+			updateSectionsByPeriod(period)
+		}
+
+		// 從 Google Sheets 獲取資料
+		const fetchEventsData = async () => {
+			try {
+				const res = await fetch('/api/events')
+				
+				if (!res.ok) {
+					throw new Error(`HTTP 錯誤! 狀態: ${res.status}`)
+				}
+				
+				const rawData = await res.json()
+				
+				if (Array.isArray(rawData) && rawData.length > 1) {
+					allEventsData.value = rawData.slice(1) // 跳過標題行
+					
+					// 提取所有學期並排序
+					const periodsSet = new Set()
+					allEventsData.value.forEach(event => {
+						if (Array.isArray(event) && event[0]) {
+							periodsSet.add(event[0])
+						}
+					})
+					
+					timePeriodList.value = Array.from(periodsSet).sort().reverse() // 最新學期在前
+					
+					// 設定預設選中最新學期
+					if (timePeriodList.value.length > 0) {
+						selectedPeriod.value = timePeriodList.value[0]
+						updateSectionsByPeriod(selectedPeriod.value)
+					} else {
+						sections.value = [
+							{
+								id: 1,
+								title: "沒有資料",
+								content: "找不到任何學期資料。",
+							}
+						]
+					}
+				} else {
+					sections.value = [
+						{
+							id: 1,
+							title: "資料不足",
+							content: "Google Sheets 中沒有足夠的資料。",
+						}
+					]
+				}
+			} catch (error) {
+				console.error('獲取 Events 資料時發生錯誤:', error)
+				
+				let errorMessage = '未知錯誤'
+				if (error.name === 'TypeError' && error.message.includes('fetch')) {
+					errorMessage = '無法連接到伺服器，請檢查伺服器是否啟動'
+				} else if (error.message.includes('HTTP 錯誤')) {
+					errorMessage = `伺服器回應錯誤: ${error.message}`
+				} else if (error.message.includes('JSON')) {
+					errorMessage = '伺服器回應的資料格式不正確'
+				} else {
+					errorMessage = error.message
+				}
+				
+				sections.value = [
+					{
+						id: 1,
+						title: "載入失敗",
+						content: `錯誤詳情: ${errorMessage}`,
+					}
+				]
+			}
+		}
+
+		// 根據選中的學期更新 sections
+		const updateSectionsByPeriod = (period) => {
+			const filteredEvents = allEventsData.value.filter(event => 
+				Array.isArray(event) && event[0] === period
+			)
+			
+			sections.value = filteredEvents.map((event, index) => ({
+				id: index + 1,
+				title: event[1] || `活動 ${index + 1}`,  // B欄：標題
+				content: event[2] || '暫無內容',          // C欄：內容
+			}))
+			
+			// 重置選中的 section
+			if (sections.value.length > 0) {
+				activeSection.value = 1
+				selectedSection.value = sections.value[0].title
+			} else {
+				sections.value = [
+					{
+						id: 1,
+						title: "沒有事件",
+						content: `學期 ${period} 沒有找到任何事件。`,
+					}
+				]
+			}
 		}
 
 		onMounted(() => {
+			fetchEventsData()
 			scrollToSection(1)
 			updateRotations()
 			window.addEventListener("resize", updateRotations)
-			if (pickerScrollerContainer.value) {
-				pickerScrollerContainer.value.addEventListener(
-					"scrollend",
-					testFunction
-				)
-			}
 		})
 
 		onUnmounted(() => {
 			window.removeEventListener("resize", updateRotations)
-			if (pickerScrollerContainer.value) {
-				pickerScrollerContainer.value.removeEventListener(
-					"scrollend",
-					testFunction
-				)
-			}
 		})
 
 		return {
@@ -541,7 +589,6 @@ export default {
 			handlePickerScroll,
 			updateRotations,
 			testSection,
-			testFunction,
 			timePeriodList,
 			selectedPeriod,
 			toggleDropdown,
