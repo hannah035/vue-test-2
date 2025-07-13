@@ -34,7 +34,17 @@
 						class="dropdown-button"
 						id="dropdown-button"
 					>
-						{{ selectedPeriod }} V
+						{{ selectedPeriod }}
+						<svg width="28" height="25" viewBox="0 0 40 30">
+							<polyline
+								points="10,0 20,25 30,0"
+								fill="none"
+								stroke="white"
+								stroke-width="4"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
 					</button>
 					<div class="dropdown-content" id="dropdown-content">
 						<div
@@ -53,7 +63,6 @@
 				<div
 					class="picker-scroller-container"
 					@scroll="updateRotations"
-					@scrollend="testFunction"
 					ref="pickerScrollerContainer"
 				>
 					<div class="picker-scroller">
@@ -96,13 +105,16 @@
 	</div>
 </template>
 
-<style lang="css" scoped>
+<style lang="css">
 :root {
 	--picker-height: 50px;
 	--shown-pickers: 3;
 	--card-color: #343434;
 	font-family: "JetBrains Mono";
 }
+</style>
+
+<style lang="css" scoped>
 .title-text {
 	font-size: 1.5rem;
 	font-weight: 600;
@@ -111,9 +123,13 @@
 	padding-top: 20px;
 	position: sticky;
 	top: 0px;
-	background-color: var(--card-color);
+	background: linear-gradient(
+		to bottom,
+		var(--card-color),
+		var(--card-color)
+	); /* Ensure solid background */
 	border-bottom: white 1px solid;
-	border-top: var(--card-color) 1px solid;
+	/* border-top: var(--card-color) 1px solid; */
 }
 body {
 	margin: 0;
@@ -191,7 +207,7 @@ p {
 	font-weight: 400;
 	line-height: normal;
 	text-align: center;
-	top: 70%;
+	top: 40%;
 	position: absolute;
 	height: var(--picker-height);
 	cursor: pointer;
@@ -206,7 +222,7 @@ p {
 	line-height: normal;
 	text-align: center;
 	cursor: pointer;
-	top: calc(70% + 10px + var(--picker-height));
+	top: calc(40% + 10px + var(--picker-height));
 	position: relative;
 	background-color: black;
 }
@@ -236,25 +252,24 @@ p {
 }
 .picker-container-cover.top {
 	top: 0px;
-	bottom: calc(50vh + var(--picker-height) * var(--shown-pickers) / 2);
+	bottom: calc(50% + var(--picker-height) * var(--shown-pickers) / 2);
 }
 .picker-container-cover.bottom {
 	bottom: 0px;
-	top: calc(50vh + var(--picker-height) * var(--shown-pickers) / 2);
+	top: calc(50% + var(--picker-height) * var(--shown-pickers));
 }
 .picker-container {
 	position: relative;
 	top: 50%;
 	transform: translateY(-50%);
-	height: calc(var(--picker-height) * var(--shown-pickers));
+	height: calc(var(--picker-height) * (var(--shown-pickers) + 1));
 }
 .picker-scroller-container {
-	height: 100%;
+	height: calc(var(--picker-height) * (var(--shown-pickers) + 1));
 	overflow-y: auto;
 	overflow-x: hidden;
 	position: relative;
 	scroll-snap-type: y mandatory;
-	
 }
 .picker-scroller {
 	display: flex;
@@ -327,26 +342,26 @@ export default {
 			},
 		])
 		const timePeriodList = ref([
-			"Last 24 hours",
-			"Last 7 days",
-			"Last 30 days",
-			"Last 90 days",
-			"Last 180 days",
-			"Last 365 days",
-			"All time",
+			"114-1",
+			"113-2",
+			"113-1",
+			"112-2",
+			"112-1",
+			"111-2",
+			"111-1",
 		])
-		let selectedPeriod = ref("Last 30 days")
+		let selectedPeriod = ref("114-1")
 
 		const contentContainer = ref(null)
 		const pickerContainer = ref(null)
 		const pickerScrollerContainer = ref(null)
 		const activeSection = ref(1)
 		const selectedSection = ref("Section 1")
-		// let scrollTimeout = null;
+		let scrollTimeout = null;
 		let isProgrammaticScroll = false
 		let testSection = ref("Section 1")
 		const testFunction = () => {
-			console.log("test function")
+			alert("Custom scrollend triggered!")
 		}
 		const scrollToSection = (sectionId) => {
 			isProgrammaticScroll = true
@@ -367,7 +382,7 @@ export default {
 			setTimeout(() => {
 				isProgrammaticScroll = false
 			}, 1000)
-			syncPickerScroll(sectionId)
+			// syncPickerScroll(sectionId)
 		}
 
 		const handleContentScroll = () => {
@@ -393,7 +408,7 @@ export default {
 
 		const syncPickerScroll = (sectionId) => {
 			isProgrammaticScroll = true
-			// alert(sectionId);
+			console.log("syncPickerScroll", sectionId)
 			const buttonElement = document.getElementById(`button-${sectionId}`)
 			if (buttonElement == null) return
 			if (buttonElement && pickerScrollerContainer.value) {
@@ -405,9 +420,9 @@ export default {
 					behavior: "smooth",
 				})
 			}
-			// setTimeout(() => {
-			// 	isProgrammaticScroll = false;
-			// }, 1000);
+			setTimeout(() => {
+				isProgrammaticScroll = false;
+			}, 100);
 		}
 
 		const handlePickerScroll = async () => {
@@ -476,19 +491,19 @@ export default {
 				const angle = Math.asin(relativePos * maxSin) * (180 / Math.PI) // Convert to degrees
 				div.style.transform = `rotate3d(1, 0, 0, ${angle}deg)`
 			})
-			// if (scrollTimeout) clearTimeout(scrollTimeout);
+
+			// if (scrollTimeout) clearTimeout(scrollTimeout)
 			// scrollTimeout = setTimeout(() => {
-			// 	console.log("Custom scrollend triggered!");
-			// 	testFunction();
-			// 	scrollToSection(testSection.value);
-			// }, 100);
+				
+			// 	scrollToSection(testSection.value)
+			// }, 100)
 		}
 		const toggleDropdown = () => {
 			const dropdownContent = document.getElementById("dropdown-content")
 			dropdownContent.classList.toggle("expand")
 		}
 		const selectPeriod = (period) => {
-			selectedPeriod = period
+			selectedPeriod.value = period
 			toggleDropdown()
 		}
 
@@ -496,10 +511,22 @@ export default {
 			scrollToSection(1)
 			updateRotations()
 			window.addEventListener("resize", updateRotations)
+			if (pickerScrollerContainer.value) {
+				pickerScrollerContainer.value.addEventListener(
+					"scrollend",
+					testFunction
+				)
+			}
 		})
 
 		onUnmounted(() => {
 			window.removeEventListener("resize", updateRotations)
+			if (pickerScrollerContainer.value) {
+				pickerScrollerContainer.value.removeEventListener(
+					"scrollend",
+					testFunction
+				)
+			}
 		})
 
 		return {
