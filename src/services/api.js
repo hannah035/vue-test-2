@@ -27,6 +27,16 @@ export default {
 				throw err
 			})
 	},
+	put(route, data) {
+		return axios
+			.put(`${baseUrl}/${route}`, data)
+			.then((res) => {
+				return res.data
+			})
+			.catch((err) => {
+				throw err
+			})
+	},
 	delete(route, key) {
 		return axios
 			.delete(`${baseUrl}/${route}`, { data: { key } })
