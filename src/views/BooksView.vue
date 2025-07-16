@@ -155,6 +155,16 @@ export default {
 			return `repeat(${columns}, ${imageWidth}px)`
 		},
 	},
+	watch: {
+		'$route.query.bookId': {
+			handler(newBookId) {
+				if (newBookId) {
+					this.openBookDetails(newBookId)
+				}
+			},
+			immediate: true
+		}
+	},
 	methods: {
 		selectBook(book, index) {
 			this.selectedBook = book
@@ -186,6 +196,27 @@ export default {
 			if (savedUser && savedLoginStatus === 'true') {
 				this.isLoggedIn = true
 				this.currentUser = JSON.parse(savedUser)
+			}
+		},
+		openBookDetails(bookId) {
+			// 根據書籍 ID 找到對應的書籍和索引
+			if (this.booksData && bookId) {
+				const bookIndex = Object.keys(this.booksData).find(key => {
+					const book = JSON.parse(this.booksData[key])
+					return book.isbn === bookId
+				})
+				
+				if (bookIndex !== undefined) {
+					this.selectedBook = this.booksData[bookIndex]
+					this.selectedBookIndex = parseInt(bookIndex)
+					
+					// 滾動到對應的書籍
+					this.$nextTick(() => {
+						this.scrollToSelectedItem()
+					})
+				} else {
+					console.warn('找不到指定的書籍:', bookId)
+				}
 			}
 		},
 		async borrowBook() {
@@ -298,6 +329,13 @@ export default {
 		this.booksKey = Object.keys(this.booksData)
 		this.updateContainerWidth()
 		window.addEventListener("resize", this.updateContainerWidth)
+		
+		// 檢查是否有從路由傳入的書籍 ID（在書籍資料載入後）
+		if (this.$route.query.bookId) {
+			this.$nextTick(() => {
+				this.openBookDetails(this.$route.query.bookId)
+			})
+		}
 	},
 	beforeUnmount() {
 		window.removeEventListener("resize", this.updateContainerWidth)
