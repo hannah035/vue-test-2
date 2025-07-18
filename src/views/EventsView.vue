@@ -262,10 +262,10 @@ p {
 	position: relative;
 	top: 50%;
 	transform: translateY(-50%);
-	height: calc(var(--picker-height) * (var(--shown-pickers) + 1));
+	height: calc(var(--picker-height) * (var(--shown-pickers)));
 }
 .picker-scroller-container {
-	height: calc(var(--picker-height) * (var(--shown-pickers) + 1));
+	height: calc(var(--picker-height) * (var(--shown-pickers)));
 	overflow-y: auto;
 	overflow-x: hidden;
 	position: relative;
@@ -279,6 +279,7 @@ p {
 .picker {
 	width: 100%;
 	padding: 10px;
+	box-sizing: border-box;
 	text-align: left;
 	font-size: 1rem;
 	border: none;
@@ -319,7 +320,7 @@ export default {
 		const pickerScrollerContainer = ref(null)
 		const activeSection = ref(1)
 		const selectedSection = ref("Section 1")
-		let scrollTimeout = null;
+		let scrollTimeout = null
 		let isProgrammaticScroll = false
 		let testSection = ref("Section 1")
 		
@@ -381,8 +382,8 @@ export default {
 				})
 			}
 			setTimeout(() => {
-				isProgrammaticScroll = false;
-			}, 100);
+				isProgrammaticScroll = false
+			}, 100)
 		}
 
 		const handlePickerScroll = async () => {
@@ -454,7 +455,7 @@ export default {
 
 			// if (scrollTimeout) clearTimeout(scrollTimeout)
 			// scrollTimeout = setTimeout(() => {
-				
+
 			// 	scrollToSection(testSection.value)
 			// }, 100)
 		}
