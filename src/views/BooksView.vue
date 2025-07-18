@@ -20,14 +20,11 @@
 								@click="selectBook(book, index)"
 							>
 								<div class="product-thumbnail">
-									<img
-										loading="lazy"
-										:src="JSON.parse(book).cover"
-									/>
+									<img loading="lazy" :src="book.cover" />
 								</div>
 								<div class="product-title">
 									<div class="text">
-										{{ JSON.parse(book).title }}
+										{{ book.title }}
 									</div>
 								</div>
 							</button>
@@ -48,27 +45,15 @@
 									×
 								</button>
 								<img
-									:src="JSON.parse(selectedBook).cover"
-									:alt="JSON.parse(selectedBook).title"
+									:src="selectedBook.cover"
+									:alt="selectedBook.title"
 									class="large-image"
 								/>
-								<h2>{{ JSON.parse(selectedBook).title }}</h2>
-								<p>
-									作者：{{ JSON.parse(selectedBook).author }}
-								</p>
-								<p>
-									出版社：{{
-										JSON.parse(selectedBook).publisher
-									}}
-								</p>
-								<p>
-									位置：{{ JSON.parse(selectedBook).place }}
-								</p>
-								<p
-									v-if="
-										JSON.parse(selectedBook).borrow == '0'
-									"
-								>
+								<h2>{{ selectedBook.title }}</h2>
+								<p>作者：{{ selectedBook.author }}</p>
+								<p>出版社：{{ selectedBook.publisher }}</p>
+								<p>位置：{{ selectedBook.place }}</p>
+								<p v-if="selectedBook.borrow == '0'">
 									狀態：可借閱
 								</p>
 								<p v-else>狀態：不可借閱</p>
@@ -116,8 +101,7 @@ export default {
 	},
 	computed: {
 		gridColumns() {
-			
-			const imageWidth = this.containerWidth>768 ? 250 : 200 // Fixed image width
+			const imageWidth = this.containerWidth > 768 ? 250 : 200 // Fixed image width
 			const gap = this.containerWidth * 0.02 // Gap between images
 			const availableWidth = this.selectedBook
 				? this.containerWidth * 0.7 // 50% width when details panel is visible
@@ -156,19 +140,9 @@ export default {
 		async sendBorrowRequest() {
 			if (!validUsers.includes(this.userId)) return
 			var newBook = {
-				isbn: JSON.parse(this.selectedBook).isbn,
-				title: JSON.parse(this.selectedBook).title,
-				cover: JSON.parse(this.selectedBook).cover,
-				author: JSON.parse(this.selectedBook).author,
-				publisher: JSON.parse(this.selectedBook).publisher,
-				date: JSON.parse(this.selectedBook).data,
-				place: JSON.parse(this.selectedBook).place,
 				borrow: this.userId,
 			}
-			await bookService.postBook(
-				this.selectedBookIndex,
-				JSON.stringify(newBook)
-			)
+			await bookService.postBook(this.selectedBook._id, newBook)
 			this.booksData = await bookService.allBooks()
 			this.booksKey = Object.keys(this.booksData)
 			this.userId = ""
