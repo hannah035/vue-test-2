@@ -56,22 +56,47 @@
 								<p v-if="selectedBook.borrow == '0'">
 									狀態：可借閱
 								</p>
-								<p v-else>狀態：不可借閱</p>
-								<!-- TODO: borrow form -->
-								<div class="borrow-section">
-									<input
-										type="text"
-										id="userId"
-										v-model="userId"
-										placeholder="請輸入您的用戶ID"
-										class="user-id-input"
-									/>
+								<p v-else>
+									狀態：已借出
+									<span v-if="isLoggedIn && JSON.parse(selectedBook).borrow === currentUser._id">
+										（您已借閱）
+									</span>
+								</p>
+								
+								<!-- 借閱按鈕 - 只在登入時顯示 -->
+								<div v-if="isLoggedIn" class="borrow-section">
+									<div class="user-info">
+										<p class="current-user">登入用戶：{{ currentUser.name }}</p>
+									</div>
 									<button
-										@click="sendBorrowRequest"
+										v-if="JSON.parse(selectedBook).borrow == '0'"
+										@click="borrowBook"
 										class="borrow-btn"
 									>
 										借閱
 									</button>
+									<button
+										v-else-if="JSON.parse(selectedBook).borrow === currentUser._id"
+										@click="returnBook"
+										class="return-btn"
+									>
+										歸還
+									</button>
+									<button
+										v-else
+										class="borrow-btn"
+										disabled
+									>
+										已借出
+									</button>
+								</div>
+								
+								<!-- 未登入時顯示登入提示 -->
+								<div v-else class="login-prompt">
+									<p>請先登入才能借閱書籍</p>
+									<router-link to="/join-us" class="login-link">
+										前往登入
+									</router-link>
 								</div>
 							</div>
 						</div>
@@ -84,7 +109,7 @@
 
 <script>
 import bookService from "../services/bookService"
-import { validUsers } from "@/assets/BooksData/validUser"
+import recordService from "../services/recordService"
 
 export default {
 	name: "BooksView",
@@ -96,7 +121,8 @@ export default {
 			selectedBookIndex: null,
 			page: 1,
 			containerWidth: 0,
-			userId: "",
+			currentUser: null,
+			isLoggedIn: false,
 		}
 	},
 	computed: {
@@ -112,6 +138,16 @@ export default {
 			const columns = Math.max(2, Math.min(8, maxColumns)) // Between 2 and 8 columns
 			return `repeat(${columns}, ${imageWidth}px)`
 		},
+	},
+	watch: {
+		'$route.query.bookId': {
+			handler(newBookId) {
+				if (newBookId) {
+					this.openBookDetails(newBookId)
+				}
+			},
+			immediate: true
+		}
 	},
 	methods: {
 		selectBook(book, index) {
@@ -137,23 +173,153 @@ export default {
 		scrollToSelectedItem() {
 			this.scrollToItem(this.selectedBookIndex)
 		},
-		async sendBorrowRequest() {
-			if (!validUsers.includes(this.userId)) return
-			var newBook = {
-				borrow: this.userId,
+		checkLoginStatus() {
+			const savedUser = localStorage.getItem('currentUser')
+			const savedLoginStatus = localStorage.getItem('isLoggedIn')
+			
+			if (savedUser && savedLoginStatus === 'true') {
+				this.isLoggedIn = true
+				this.currentUser = JSON.parse(savedUser)
 			}
-			await bookService.postBook(this.selectedBook._id, newBook)
-			this.booksData = await bookService.allBooks()
-			this.booksKey = Object.keys(this.booksData)
-			this.userId = ""
-			this.closeDetails()
+		},
+		openBookDetails(bookId) {
+			// 根據書籍 ID 找到對應的書籍和索引
+			if (this.booksData && bookId) {
+				const bookIndex = Object.keys(this.booksData).find(key => {
+					const book = JSON.parse(this.booksData[key])
+					return book.isbn === bookId
+				})
+				
+				if (bookIndex !== undefined) {
+					this.selectedBook = this.booksData[bookIndex]
+					this.selectedBookIndex = parseInt(bookIndex)
+					
+					// 滾動到對應的書籍
+					this.$nextTick(() => {
+						this.scrollToSelectedItem()
+					})
+				} else {
+					console.warn('找不到指定的書籍:', bookId)
+				}
+			}
+		},
+		async borrowBook() {
+			if (!this.isLoggedIn || !this.currentUser) {
+				alert('請先登入才能借閱書籍')
+				this.$router.push('/join-us')
+				return
+			}
+
+			if (JSON.parse(this.selectedBook).borrow !== '0') {
+				alert('此書已被借出')
+				return
+			}
+
+			try {
+				// 創建借閱記錄
+				const borrowRecord = {
+					bookId: JSON.parse(this.selectedBook).isbn,
+					userId: this.currentUser._id, // 使用 _id 而不是 email
+					userName: this.currentUser.name,
+					bookTitle: JSON.parse(this.selectedBook).title,
+					borrowDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+					returnDate: null,
+					status: 'borrowed'
+				}
+
+				// 發送借閱記錄到 records 集合
+				await recordService.postRecord(JSON.stringify(borrowRecord))
+
+				// 更新書籍狀態 - 這裡也使用 _id
+				var updatedBook = {
+					...JSON.parse(this.selectedBook),
+					borrow: this.currentUser._id
+				}
+				
+				await bookService.postBook(
+					this.selectedBookIndex,
+					JSON.stringify(updatedBook)
+				)
+
+				// 重新載入書籍數據
+				this.booksData = await bookService.allBooks()
+				this.booksKey = Object.keys(this.booksData)
+				
+				// 更新選中的書籍
+				this.selectedBook = JSON.stringify(updatedBook)
+				
+				alert('借閱成功！')
+			} catch (error) {
+				console.error('借閱失敗:', error)
+				alert('借閱失敗，請稍後再試')
+			}
+		},
+		async returnBook() {
+			if (!this.isLoggedIn || !this.currentUser) {
+				alert('請先登入才能歸還書籍')
+				return
+			}
+
+			if (JSON.parse(this.selectedBook).borrow !== this.currentUser._id) {
+				alert('您沒有借閱此書')
+				return
+			}
+
+			try {
+				// 找到對應的借閱記錄並更新狀態
+				const records = await recordService.allRecords()
+				const borrowRecord = records.find(record => 
+					record.bookId === JSON.parse(this.selectedBook).isbn && 
+					record.userId === this.currentUser._id && 
+					record.status === 'borrowed'
+				)
+
+				if (borrowRecord) {
+					// 更新借閱記錄狀態
+					await recordService.updateRecord(borrowRecord._id, {
+						returnDate: new Date().toISOString().split('T')[0],
+						status: 'returned'
+					})
+				}
+
+				// 更新書籍狀態為可借閱
+				var updatedBook = {
+					...JSON.parse(this.selectedBook),
+					borrow: '0'
+				}
+				
+				await bookService.postBook(
+					this.selectedBookIndex,
+					JSON.stringify(updatedBook)
+				)
+
+				// 重新載入書籍數據
+				this.booksData = await bookService.allBooks()
+				this.booksKey = Object.keys(this.booksData)
+				
+				// 更新選中的書籍
+				this.selectedBook = JSON.stringify(updatedBook)
+				
+				alert('歸還成功！')
+			} catch (error) {
+				console.error('歸還失敗:', error)
+				alert('歸還失敗，請稍後再試')
+			}
 		},
 	},
 	async mounted() {
+		this.checkLoginStatus()
 		this.booksData = await bookService.allBooks()
 		this.booksKey = Object.keys(this.booksData)
 		this.updateContainerWidth()
 		window.addEventListener("resize", this.updateContainerWidth)
+		
+		// 檢查是否有從路由傳入的書籍 ID（在書籍資料載入後）
+		if (this.$route.query.bookId) {
+			this.$nextTick(() => {
+				this.openBookDetails(this.$route.query.bookId)
+			})
+		}
 	},
 	beforeUnmount() {
 		window.removeEventListener("resize", this.updateContainerWidth)
@@ -318,6 +484,44 @@ p {
 	gap: 10px;
 }
 
+.user-info {
+	margin-bottom: 10px;
+}
+
+.current-user {
+	font-size: 0.9rem;
+	color: #666;
+	margin: 0;
+}
+
+.login-prompt {
+	margin-top: 20px;
+	text-align: center;
+	padding: 15px;
+	background: rgba(245, 166, 35, 0.1);
+	border-radius: 8px;
+}
+
+.login-prompt p {
+	margin: 0 0 10px 0;
+	color: #666;
+}
+
+.login-link {
+	display: inline-block;
+	padding: 8px 16px;
+	background-color: #f5a623;
+	color: white;
+	text-decoration: none;
+	border-radius: 20px;
+	font-size: 0.9rem;
+	transition: background-color 0.3s;
+}
+
+.login-link:hover {
+	background-color: #e69520;
+}
+
 .user-id-input {
 	padding: 10px;
 	width: 90%;
@@ -345,10 +549,38 @@ p {
 	position: relative;
 	left: 50%;
 	transform: translateX(-50%);
+	transition: background-color 0.3s;
 }
 
-.borrow-btn:hover {
+.borrow-btn:hover:not(:disabled) {
 	background-color: #e69520;
+}
+
+.borrow-btn:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
+.return-btn {
+	width: 90%;
+	padding: 10px;
+	background-color: #28a745;
+	color: white;
+	border: none;
+	border-radius: 25px;
+	font-family: "JetBrains Mono";
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	text-align: center;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+	transition: background-color 0.3s;
+}
+
+.return-btn:hover {
+	background-color: #218838;
 }
 
 /* Adjust mobile styles */

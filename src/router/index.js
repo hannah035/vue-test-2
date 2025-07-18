@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router"
 import HomeView from "../views/HomeView.vue"
 import EventsView from "../views/EventsView.vue"
 import ReviewsView from "../views/ReviewsView.vue"
+import ReviewsView2 from "../views/ReviewsView2.vue"
 import AboutView from "../views/AboutView.vue"
 import BooksView from "../views/BooksView.vue"
 
@@ -22,6 +23,11 @@ const routes = [
 		component: () => import("../views/ReviewsView.vue"), // Lazy loading
 	},
 	{
+		path: "/reviews2",
+		name: "Reviews2",
+		component: () => import("../views/ReviewsView2.vue"), // Lazy loading
+	},
+	{
 		path: "/books",
 		name: "Books",
 		component: () => import("../views/BooksView.vue"), // Lazy loading
@@ -30,6 +36,11 @@ const routes = [
 		path: "/about",
 		name: "About",
 		component: () => import("../views/AboutView.vue"), // Lazy loading
+	},
+	{
+		path: "/join-us",
+		name: "JoinUs",
+		component: () => import("../views/JoinUsView.vue"), // Lazy loading
 	},
 ]
 
