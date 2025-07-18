@@ -16,15 +16,51 @@
 			<!-- Top Section -->
 			<div class="top-section">
 				<div class="tags-section">
-					<span class="tag" v-for="tag in tags" :key="tag">#{{ tag }}</span>
+					<div class="tags-header">
+						<span class="tags-title">tags</span>
+						<div class="tags-actions">
+							<span class="selected-count" v-if="selectedTags.length > 0">
+								select {{ selectedTags.length }} tags
+							</span>
+							<button 
+								v-if="selectedTags.length > 0" 
+								@click="clearAllTags"
+								class="clear-tags-btn"
+							>
+								清除所有
+							</button>
+						</div>
+					</div>
+					<div class="tags-list">
+						<span 
+							class="tag" 
+							v-for="tag in tags" 
+							:key="tag"
+							:class="{ active: selectedTags.includes(tag) }"
+							@click="toggleTag(tag)"
+						>
+							#{{ tag }}
+							<span class="tag-count">({{ getTagCount(tag) }})</span>
+						</span>
+					</div>
 				</div>
 				<div class="sort-section">
-					<label>Sorted by</label>
-					<select v-model="sortBy" @change="sortReviews">
-						<option value="date">Date</option>
-						<option value="title">Title</option>
-						<option value="rating">Rating</option>
-					</select>
+					<div class="results-info">
+						<span class="total-count">
+							Total: {{ filteredReviews.length }} reviews
+							<span v-if="selectedTags.length > 0" class="filter-info">
+								(filtered by {{ selectedTags.length }} tags)
+							</span>
+						</span>
+					</div>
+					<div class="sort-controls">
+						<label>Sorted by</label>
+						<select v-model="sortBy" @change="sortReviews">
+							<option value="date">Date</option>
+							<option value="title">Title</option>
+							<option value="rating">Rating</option>
+						</select>
+					</div>
 				</div>
 			</div>
 
@@ -33,7 +69,14 @@
 				<div class="card-header">
 					<h2 class="card-title">{{ currentReview.title }}</h2>
 					<div class="card-tags">
-						<span class="tag" v-for="tag in currentReview.tags" :key="tag">#{{ tag }}</span>
+						<span class="tag" v-for="tag in currentReview.tags" :key="tag"
+							:class="{ 'selected-tag': selectedTags.includes(tag) }">
+							#{{ tag }}
+						</span>
+						<span v-if="selectedTags.length > 0 && getMatchingTagsCount(currentReview) > 0" 
+							class="match-info">
+							Matches {{ getMatchingTagsCount(currentReview) }} of {{ selectedTags.length }} selected tags
+						</span>
 					</div>
 				</div>
 				
@@ -142,9 +185,21 @@
 					<div class="item-header">
 						<span class="item-author">{{ review.author }}</span>
 						<span class="item-date">{{ review.date }}</span>
+						<span v-if="selectedTags.length > 0 && getMatchingTagsCount(review) > 0" 
+							class="match-count">
+							{{ getMatchingTagsCount(review) }}/{{ selectedTags.length }} tags
+						</span>
 					</div>
 					<div class="item-content">
 						{{ review.content }}
+					</div>
+					
+					<!-- 標籤顯示 -->
+					<div v-if="review.tags && review.tags.length > 0" class="item-tags">
+						<span class="item-tag" v-for="tag in review.tags" :key="tag"
+							:class="{ 'selected-tag': selectedTags.includes(tag) }">
+							#{{ tag }}
+						</span>
 					</div>
 					
 					<!-- 回覆按鈕 (只有登入用戶可見) -->
@@ -235,7 +290,9 @@ export default {
 			currentIndex: 0,
 			sortBy: "date",
 			tags: [],
+			selectedTags: [], // 选中的标签
 			reviews: [],
+			allReviews: [], // 存储所有评论的原始数据
 			loading: true,
 			error: null,
 			// 登入狀態
@@ -256,6 +313,47 @@ export default {
 	computed: {
 		currentReview() {
 			return this.reviews[this.currentIndex] || {}
+		},
+		filteredReviews() {
+			if (this.selectedTags.length === 0) {
+				return this.allReviews
+			}
+			
+			// 篩選包含任意選中 tags 的評論（聯集）
+			const filtered = this.allReviews.filter(review => {
+				return this.selectedTags.some(tag => 
+					review.tags && review.tags.includes(tag)
+				)
+			})
+			
+			// 按照包含的選中 tags 數量排序，優先顯示包含更多選中 tags 的評論
+			return filtered.sort((a, b) => {
+				const aMatchCount = this.selectedTags.filter(tag => 
+					a.tags && a.tags.includes(tag)
+				).length
+				const bMatchCount = this.selectedTags.filter(tag => 
+					b.tags && b.tags.includes(tag)
+				).length
+				
+				// 先按匹配數量降序排序
+				if (aMatchCount !== bMatchCount) {
+					return bMatchCount - aMatchCount
+				}
+				
+				// 如果匹配數量相同，按日期降序排序
+				return new Date(b.date) - new Date(a.date)
+			})
+		}
+	},
+	watch: {
+		filteredReviews: {
+			handler(newVal) {
+				this.reviews = newVal
+				if (this.currentIndex >= newVal.length) {
+					this.currentIndex = Math.max(0, newVal.length - 1)
+				}
+			},
+			immediate: true
 		}
 	},
 	methods: {
@@ -293,7 +391,7 @@ export default {
 				
 				const response = await reviewsService.getAllReviews()
 				if (response.success) {
-					this.reviews = response.data
+					this.allReviews = response.data
 					this.currentIndex = 0
 				} else {
 					this.error = 'Failed to load reviews'
@@ -304,6 +402,46 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+
+		// 更新显示的评论列表
+		updateReviews() {
+			// 由于使用了 watcher，这里可以简化
+			this.currentIndex = 0
+		},
+
+		// 切换标签选择
+		toggleTag(tag) {
+			const index = this.selectedTags.indexOf(tag)
+			if (index > -1) {
+				this.selectedTags.splice(index, 1)
+			} else {
+				this.selectedTags.push(tag)
+			}
+		},
+
+		// 清除所有选中的标签
+		clearAllTags() {
+			this.selectedTags = []
+		},
+
+		// 获取标签对应的评论数量
+		getTagCount(tag) {
+			return this.allReviews.filter(review => 
+				review.tags && review.tags.includes(tag)
+			).length
+		},
+
+		// 获取评论匹配的选中标签数量
+		getMatchingTagsCount(review) {
+			if (!this.selectedTags.length || !review.tags) return 0
+			return this.selectedTags.filter(tag => review.tags.includes(tag)).length
+		},
+
+		// 获取评论匹配的选中标签列表
+		getMatchingTags(review) {
+			if (!this.selectedTags.length || !review.tags) return []
+			return this.selectedTags.filter(tag => review.tags.includes(tag))
 		},
 
 		async fetchTags() {
@@ -345,6 +483,7 @@ export default {
 					this.reviews.sort((a, b) => b.rating - a.rating)
 					break
 			}
+			this.currentIndex = 0
 		},
 
 		// 切換回覆評論表單
@@ -379,7 +518,10 @@ export default {
 				
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的評論
-					await this.fetchReviews()
+					const reviewsResponse = await reviewsService.getAllReviews()
+					if (reviewsResponse.success) {
+						this.allReviews = reviewsResponse.data
+					}
 					
 					// 清空表單
 					this.commentContent = ''
@@ -627,26 +769,122 @@ export default {
 
 .tags-section {
 	display: flex;
-	gap: 15px;
+	flex-direction: column;
+	gap: 10px;
+	flex: 1;
 }
 
-.tag {
+.tags-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 5px;
+}
+
+.tags-title {
+	font-weight: bold;
 	color: #fff;
 	font-size: 16px;
 }
 
-.sort-section {
+.tags-actions {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 }
 
-.sort-section label {
+.selected-count {
+	color: #007acc;
+	font-size: 14px;
+}
+
+.clear-tags-btn {
+	background-color: #666;
+	color: #fff;
+	border: none;
+	padding: 4px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.3s;
+}
+
+.clear-tags-btn:hover {
+	background-color: #777;
+}
+
+.tags-list {
+	display: flex;
+	gap: 15px;
+	flex-wrap: wrap;
+}
+
+.tag {
+	color: #fff;
+	font-size: 16px;
+	padding: 6px 12px;
+	background-color: #333;
+	border-radius: 20px;
+	cursor: pointer;
+	transition: all 0.3s;
+	border: 2px solid transparent;
+	user-select: none;
+}
+
+.tag:hover {
+	background-color: #444;
+	transform: translateY(-2px);
+}
+
+.tag.active {
+	background-color: #007acc;
+	border-color: #0056b3;
+}
+
+.tag-count {
+	margin-left: 5px;
+	font-size: 12px;
+	opacity: 0.8;
+}
+
+.sort-section {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.results-info {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.total-count {
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.filter-info {
+	color: #007acc;
+	font-size: 12px;
+	font-weight: normal;
+}
+
+.sort-controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.sort-controls label {
 	color: #fff;
 	font-size: 16px;
 }
 
-.sort-section select {
+.sort-controls select {
 	background-color: #333;
 	color: #fff;
 	border: 1px solid #555;
@@ -679,6 +917,25 @@ export default {
 .card-tags {
 	display: flex;
 	gap: 10px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.card-tags .tag.selected-tag {
+	background-color: #007acc;
+	border-color: #0056b3;
+	color: #fff;
+}
+
+.match-info {
+	color: #00cc66;
+	font-size: 12px;
+	font-weight: bold;
+	margin-left: 10px;
+	padding: 2px 8px;
+	background-color: rgba(0, 204, 102, 0.1);
+	border-radius: 10px;
+	border: 1px solid #00cc66;
 }
 
 .card-content {
@@ -794,6 +1051,7 @@ export default {
 .item-header {
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 	margin-bottom: 10px;
 	font-weight: bold;
 }
@@ -808,6 +1066,16 @@ export default {
 	font-size: 16px;
 }
 
+.match-count {
+	color: #00cc66;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 2px 6px;
+	background-color: rgba(0, 204, 102, 0.1);
+	border-radius: 8px;
+	border: 1px solid #00cc66;
+}
+
 .item-content {
 	color: #ddd;
 	line-height: 1.4;
@@ -815,6 +1083,28 @@ export default {
 	font-size: 16px;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+}
+
+.item-tags {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin-bottom: 10px;
+}
+
+.item-tag {
+	color: #ccc;
+	font-size: 12px;
+	padding: 2px 6px;
+	background-color: #333;
+	border-radius: 10px;
+	border: 1px solid #555;
+}
+
+.item-tag.selected-tag {
+	background-color: #007acc;
+	border-color: #0056b3;
+	color: #fff;
 }
 
 .nested-item {
