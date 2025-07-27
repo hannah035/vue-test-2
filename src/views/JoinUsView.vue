@@ -3,57 +3,75 @@
 		<!-- 登入表單 -->
 		<div v-if="!isLoggedIn" class="login-section">
 			<div class="login-form">
-				<h2>Join Our Community</h2>
-				<p class="subtitle">Login to access exclusive content and features</p>
-				
 				<form @submit.prevent="login">
 					<div class="form-group">
-						<label for="email">Email Address</label>
-						<input 
-							type="email" 
-							id="email" 
-							v-model="loginForm.email" 
-							required 
+						<label for="email">Email</label>
+						<input
+							type="email"
+							id="email"
+							v-model="loginForm.email"
+							required
 							:disabled="loginLoading"
-							placeholder="Enter your email"
 						/>
 					</div>
-					
+
 					<div class="form-group">
 						<label for="password">Password</label>
-						<input 
-							type="password" 
-							id="password" 
-							v-model="loginForm.password" 
-							required 
+						<input
+							type="password"
+							id="password"
+							v-model="loginForm.password"
+							required
 							:disabled="loginLoading"
-							placeholder="Enter your password"
 						/>
 					</div>
-					
-					<button type="submit" :disabled="loginLoading" class="login-btn">
+
+					<button
+						type="submit"
+						:disabled="loginLoading"
+						class="login-btn"
+					>
 						<span v-if="loginLoading">
 							<svg class="spinner" viewBox="0 0 50 50">
-								<circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
-									<animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
-									<animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+								<circle
+									cx="25"
+									cy="25"
+									r="20"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-dasharray="31.416"
+									stroke-dashoffset="31.416"
+								>
+									<animate
+										attributeName="stroke-dasharray"
+										dur="2s"
+										values="0 31.416;15.708 15.708;0 31.416"
+										repeatCount="indefinite"
+									/>
+									<animate
+										attributeName="stroke-dashoffset"
+										dur="2s"
+										values="0;-15.708;-31.416"
+										repeatCount="indefinite"
+									/>
 								</circle>
 							</svg>
 							Logging in...
 						</span>
 						<span v-else>Login</span>
 					</button>
-					
+
 					<div v-if="loginError" class="error-message">
 						{{ loginError }}
 					</div>
 				</form>
-				
+
 				<div class="login-help">
-					<p>Don't have an account? Contact us to get started!</p>
 					<p class="demo-info">
-						<strong>Demo Account:</strong><br>
-						Email: ming.zhang@email.com<br>
+						<strong>Demo Account:</strong><br />
+						Email: ming.zhang@email.com<br />
 						Password: $2b$10$encrypted_password_hash
 					</p>
 				</div>
@@ -62,125 +80,124 @@
 
 		<!-- 登入成功後的歡迎頁面 -->
 		<div v-else class="welcome-section">
-			<div class="welcome-content">
-				<h1>Welcome, {{ currentUser.nickname }}!</h1>
-				<p class="welcome-message">
-					You've successfully joined our community. Explore exclusive content and connect with fellow sci-fi enthusiasts!
-				</p>
-				
-				<div class="user-info-card">
-					<h3>Your Profile</h3>
-					<div class="profile-info">
-						<div class="info-item">
-							<span class="label">Name:</span>
-							<span class="value">{{ currentUser.name }}</span>
-						</div>
-						<div class="info-item">
-							<span class="label">Email:</span>
-							<span class="value">{{ currentUser.email }}</span>
-						</div>
-						<div class="info-item">
-							<span class="label">Nickname:</span>
-							<span class="value">{{ currentUser.nickname }}</span>
-						</div>
-						<div class="info-item">
-							<span class="label">Member Since:</span>
-							<span class="value">{{ formatDate(currentUser.createdAt) }}</span>
-						</div>
-					</div>
+			<div class="profile-info-grid">
+				<div class="profile-info-title name">Name</div>
+				<div class="profile-info-content name">
+					{{ currentUser.name }}
 				</div>
+				<div class="profile-info-title nickname">Nickname</div>
+				<div class="profile-info-content nickname">
+					{{ currentUser.nickname }}
+				</div>
+				<div class="profile-info-title email">Email</div>
+				<div class="profile-info-content email">
+					{{ currentUser.email }}
+				</div>
+				<div class="profile-info-title password">Password</div>
 
-				<!-- 借閱記錄區域 -->
-				<div class="borrowing-section">
-					<div class="borrowing-tabs">
-						<button 
-							@click="activeTab = 'borrowed'"
-							:class="{ active: activeTab === 'borrowed' }"
-							class="tab-btn"
+				<div class="profile-info-content password">
+					{{ currentUser.password }}
+				</div>
+			</div>
+			<div class="borrow-history-grid">
+				<div class="reviews-container">
+					<div class="sep-line"></div>
+					<div class="review-item">
+						<div
+							class="work-format"
+							v-bind="setFormatSpan('borrowedBooks')"
 						>
-							借閱中的書 ({{ borrowedBooks.length }})
-						</button>
-						<button 
-							@click="activeTab = 'history'"
-							:class="{ active: activeTab === 'history' }"
-							class="tab-btn"
+							<div class="format-label">Borrowing</div>
+						</div>
+						<template
+							v-for="(record, index) in borrowedBooks"
+							:key="index"
 						>
-							借閱過的書 ({{ borrowingHistory.length }})
-						</button>
-					</div>
+							<div class="review-card">
+								<div class="review-title">
+									{{ record.bookTitle }}
+								</div>
 
-					<div class="borrowing-content">
-						<!-- 借閱中的書 -->
-						<div v-if="activeTab === 'borrowed'" class="borrowed-books">
-							<div v-if="borrowedBooks.length === 0" class="empty-state">
-								<p>目前沒有借閱中的書籍</p>
-								<router-link to="/books" class="browse-link">去借閱書籍</router-link>
-							</div>
-							<div v-else class="books-grid">
-								<div 
-									v-for="record in borrowedBooks" 
-									:key="record._id"
-									class="book-card"
-								>
-									<div class="book-info">
-										<h4>{{ record.bookTitle }}</h4>
-										<p class="borrow-date">借閱日期: {{ formatDate(record.borrowDate) }}</p>
-										<p class="days-borrowed">已借閱: {{ calculateDaysBorrowed(record.borrowDate) }} 天</p>
-									</div>
+								<div class="borrow-date-info">
+									<span class="borrow-date"
+										>From:
+										{{
+											formatDate(record.borrowDate)
+										}}</span
+									>
+									<span class="days-borrowed"
+										>Days Borrowed:
+										{{
+											calculateDaysBorrowed(
+												record.borrowDate
+											)
+										}}</span
+									>
+								</div>
+								<div class="return-borrow-button">
 									<div class="book-actions">
-										<router-link 
-											:to="{ path: '/books', query: { bookId: record.bookId } }" 
+										<router-link
+											:to="{
+												path: '/books',
+												query: {
+													bookId: record.bookId,
+												},
+											}"
 											class="action-link view-book"
 										>
-											歸還書籍
+											Return
 										</router-link>
 									</div>
 								</div>
 							</div>
+						</template>
+						<div
+							class="work-format"
+							v-bind="setFormatSpan('borrowingHistory')"
+						>
+							<div class="format-label">History</div>
 						</div>
+						<template
+							v-for="(record, index) in borrowingHistory"
+							:key="index"
+						>
+							<div class="review-card">
+								<div class="review-title">
+									{{ record.bookTitle }}
+								</div>
 
-						<!-- 借閱過的書 -->
-						<div v-if="activeTab === 'history'" class="history-books">
-							<div v-if="borrowingHistory.length === 0" class="empty-state">
-								<p>沒有借閱歷史記錄</p>
-								<router-link to="/books" class="browse-link">去借閱書籍</router-link>
-							</div>
-							<div v-else class="books-grid">
-								<div 
-									v-for="record in borrowingHistory" 
-									:key="record._id"
-									class="book-card history-card"
-								>
-									<div class="book-info">
-										<h4>{{ record.bookTitle }}</h4>
-										<p class="borrow-date">借閱日期: {{ formatDate(record.borrowDate) }}</p>
-										<p class="return-date">歸還日期: {{ formatDate(record.returnDate) }}</p>
-										<p class="duration">借閱時間: {{ calculateBorrowDuration(record.borrowDate, record.returnDate) }} 天</p>
-									</div>
+								<div class="borrow-date-info">
+									<span class="borrow-date"
+										>From:
+										{{
+											formatDate(record.borrowDate)
+										}}</span
+									>
+									<span class="days-borrowed"
+										>To:
+										{{
+											formatDate(record.returnDate)
+										}}</span
+									>
+								</div>
+								<div class="return-borrow-button">
 									<div class="book-actions">
-										<router-link 
-											:to="{ path: '/books', query: { bookId: record.bookId } }" 
+										<router-link
+											:to="{
+												path: '/books',
+												query: {
+													bookId: record.bookId,
+												},
+											}"
 											class="action-link view-book"
 										>
-											再次借閱
+											Borrow
 										</router-link>
 									</div>
 								</div>
 							</div>
-						</div>
+						</template>
 					</div>
-				</div>
-
-				<div class="action-buttons">
-					<router-link to="/reviews2" class="action-btn primary">
-						View Reviews
-					</router-link>
-					<router-link to="/books" class="action-btn secondary">
-						Browse Books
-					</router-link>
-					<button @click="logout" class="action-btn logout">
-						Logout
-					</button>
 				</div>
 			</div>
 		</div>
@@ -192,20 +209,54 @@ import reviewsService from '@/services/reviewsService'
 import recordService from '@/services/recordService'
 
 export default {
-	name: "JoinUsView",
+	name: 'JoinUsView',
 	data() {
 		return {
-			isLoggedIn: false,
+			isLoggedIn: false, // for production, set to true
+			// isLoggedIn: false, // for testing, set to false
 			loginLoading: false,
 			loginError: null,
 			loginForm: {
 				email: '',
-				password: ''
+				password: '',
 			},
 			currentUser: null,
 			activeTab: 'borrowed',
-			borrowedBooks: [],
-			borrowingHistory: []
+			borrowedBooks: [
+				{
+					title: 'Sample Book',
+				},
+				{ title: 'Another Book' },
+				{
+					title: 'Sample Book',
+				},
+				{
+					title: 'Sample Book',
+				},
+				{
+					title: 'Sample Book',
+				},
+				{
+					title: 'Sample Book',
+				},
+				{
+					title: 'Sample Book',
+				},
+				{
+					title: 'Sample Book',
+				},
+			],
+			borrowingHistory: [
+				{ title: 'Past Book' },
+				{ title: 'Old Book' },
+				{ title: 'Old Book' },
+				{ title: 'Old Book' },
+				{ title: 'Old Book' },
+				{ title: 'Old Book' },
+				{ title: 'Old Book' },
+			],
+			borrowCount: { borrowingHistory: 0, borrowedBooks: 0 },
+			totalCount: 0,
 		}
 	},
 	methods: {
@@ -213,16 +264,22 @@ export default {
 			try {
 				this.loginLoading = true
 				this.loginError = null
-				
-				const response = await reviewsService.login(this.loginForm.email, this.loginForm.password)
+
+				const response = await reviewsService.login(
+					this.loginForm.email,
+					this.loginForm.password
+				)
 				if (response.success) {
 					this.isLoggedIn = true
 					this.currentUser = response.data.user
-					
+
 					// 儲存登入狀態到 localStorage
-					localStorage.setItem('currentUser', JSON.stringify(response.data.user))
+					localStorage.setItem(
+						'currentUser',
+						JSON.stringify(response.data.user)
+					)
 					localStorage.setItem('isLoggedIn', 'true')
-					
+
 					// 載入借閱記錄
 					await this.loadBorrowingRecords()
 				} else {
@@ -230,7 +287,8 @@ export default {
 				}
 			} catch (error) {
 				console.error('Login error:', error)
-				this.loginError = 'Login failed. Please check your credentials and try again.'
+				this.loginError =
+					'Login failed. Please check your credentials and try again.'
 			} finally {
 				this.loginLoading = false
 			}
@@ -241,7 +299,7 @@ export default {
 			this.currentUser = null
 			this.loginForm = { email: '', password: '' }
 			this.loginError = null
-			
+
 			// 清除 localStorage
 			localStorage.removeItem('currentUser')
 			localStorage.removeItem('isLoggedIn')
@@ -250,7 +308,18 @@ export default {
 		checkLoginStatus() {
 			const savedUser = localStorage.getItem('currentUser')
 			const savedLoginStatus = localStorage.getItem('isLoggedIn')
-			
+
+			// // for testing, set isLoggedIn to true and mock user data
+			// this.isLoggedIn = true
+			// const usr = {
+			// 	name: 'Ming Zhang',
+			// 	nickname: 'Ming',
+			// 	email: 'ming.zhang@email.com',
+			// 	password: '$2b$10$encrypted_password_hash',
+			// }
+			// this.currentUser = usr
+			// return
+
 			if (savedUser && savedLoginStatus === 'true') {
 				this.isLoggedIn = true
 				this.currentUser = JSON.parse(savedUser)
@@ -261,14 +330,20 @@ export default {
 
 		async loadBorrowingRecords() {
 			if (!this.currentUser) return
-			
+
 			try {
 				const allRecords = await recordService.allRecords()
-				const userRecords = allRecords.filter(record => record.userId === this.currentUser._id)
-				
+				const userRecords = allRecords.filter(
+					(record) => record.userId === this.currentUser._id
+				)
+
 				// 分離借閱中的書和借閱過的書
-				this.borrowedBooks = userRecords.filter(record => record.status === 'borrowed')
-				this.borrowingHistory = userRecords.filter(record => record.status === 'returned')
+				this.borrowedBooks = userRecords.filter(
+					(record) => record.status === 'borrowed'
+				)
+				this.borrowingHistory = userRecords.filter(
+					(record) => record.status === 'returned'
+				)
 			} catch (error) {
 				console.error('Failed to load borrowing records:', error)
 			}
@@ -294,40 +369,74 @@ export default {
 			return new Date(dateString).toLocaleDateString('en-US', {
 				year: 'numeric',
 				month: 'long',
-				day: 'numeric'
+				day: 'numeric',
 			})
-		}
+		},
+		setFormatSpan(status) {
+			var attributes = {}
+			attributes['style'] = {
+				'grid-column': `span ${
+					status === 'borrowedBooks'
+						? this.borrowedBooks.length
+						: this.borrowingHistory.length
+				}`,
+			}
+			return attributes
+		},
+		countRecords() {
+			this.borrowCount.borrowedBooks = this.borrowedBooks.length
+			this.borrowCount.borrowingHistory = this.borrowingHistory.length
+			this.totalCount =
+				this.borrowCount.borrowedBooks +
+				this.borrowCount.borrowingHistory
+		},
+		initAttributes() {
+			this.countRecords()
+			const sepLine = document.querySelector('.sep-line')
+			const cardWidth = 200 // 假設每個卡片的寬度為 200px
+			const cardGap = 10 // 假設卡片之間的間距為 10px
+			const sepLineWidth =
+				(cardWidth + cardGap) * (this.totalCount + 2) - cardGap
+			// 我不知道為什麼要加 1 !!!!!
+
+			sepLine.style.width = `calc(${sepLineWidth}px - 63.2px)`
+		},
+	},
+	beforeMount() {
+		this.checkLoginStatus()
 	},
 	mounted() {
 		this.checkLoginStatus()
-	}
+		this.initAttributes()
+	},
 }
 </script>
 
 <style scoped>
 .join-us-container {
-	min-height: 100vh;
+	/* min-height: 100vh; */
+	height: 100%;
 	background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-	display: flex;
+	/* display: flex;
 	align-items: center;
-	justify-content: center;
-	padding: 20px;
+	justify-content: center; */
+	/* padding: 20px; */
 	font-family: 'JetBrains Mono', monospace;
 }
 
 /* 登入表單樣式 */
 .login-section {
 	width: 100%;
-	max-width: 450px;
+	height: 100%;
 }
 
 .login-form {
-	background: rgba(255, 255, 255, 0.05);
-	backdrop-filter: blur(10px);
-	border-radius: 20px;
-	padding: 40px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: none;
+	left: 50%;
+	top: 50%;
+	position: relative;
+	transform: translate(-50%, -50%);
+	max-width: 480px;
 }
 
 .login-form h2 {
@@ -347,6 +456,10 @@ export default {
 
 .form-group {
 	margin-bottom: 25px;
+	max-width: 390px;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
 }
 
 .form-group label {
@@ -354,14 +467,16 @@ export default {
 	color: #fff;
 	margin-bottom: 8px;
 	font-size: 0.9rem;
-	font-weight: 500;
+	font-weight: 400;
+	font-size: 20px;
 }
 
 .form-group input {
 	width: 100%;
 	padding: 15px;
+	height: 60px;
 	border: 2px solid rgba(255, 255, 255, 0.1);
-	border-radius: 10px;
+	border-radius: 15px;
 	background: rgba(255, 255, 255, 0.05);
 	color: #fff;
 	font-size: 1rem;
@@ -381,12 +496,18 @@ export default {
 }
 
 .login-btn {
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
 	width: 100%;
+	max-width: 120px;
+	height: 43px;
 	padding: 15px;
-	background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
 	color: #fff;
 	border: none;
-	border-radius: 10px;
+	border-radius: 100px;
+	border: white solid 1px;
+	box-sizing: border-box;
 	font-size: 1rem;
 	font-weight: 600;
 	cursor: pointer;
@@ -399,8 +520,7 @@ export default {
 }
 
 .login-btn:hover:not(:disabled) {
-	background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
-	transform: translateY(-2px);
+	transform: translate(-50%, -2px);
 	box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
 }
 
@@ -417,8 +537,12 @@ export default {
 }
 
 @keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 .error-message {
@@ -450,7 +574,22 @@ export default {
 /* 歡迎頁面樣式 */
 .welcome-section {
 	width: 100%;
-	max-width: 600px;
+	height: 100%;
+	/* max-width: 600px; */
+}
+
+.profile-info-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr 1fr 1fr 1fr;
+	gap: 20px;
+	width: 40%;
+	left: 10%;
+	top: 11%;
+	bottom: 50%;
+	position: relative;
+	/* TODO: make it responsive */
+	font-size: 24px;
 }
 
 .welcome-content {
@@ -461,6 +600,131 @@ export default {
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	text-align: center;
+}
+
+.borrow-history-grid {
+	/* display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr; */
+	bottom: 0;
+	gap: 10px;
+	height: 50%;
+	width: 100%;
+	position: absolute;
+	font-size: 24px;
+}
+.reviews-container {
+	height: 100%;
+	position: relative;
+	width: 100%;
+	overflow-x: scroll;
+}
+.sep-line {
+	/* TODO: set width in mounted */
+	height: 1px;
+	background-color: white;
+	top: 15%;
+	position: absolute;
+	left: 63.2px;
+	/* width: calc(100% - 63.2px); */
+}
+.work-format {
+	/* grid-column: span 2; */
+	grid-row: 1 / 2;
+	height: 100%;
+	position: relative;
+}
+.format-label {
+	height: 30%;
+	width: fit-content;
+	position: sticky;
+	left: 7%;
+	font-size: large;
+	height: 100%;
+}
+
+.review-item {
+	height: 100%;
+	width: fit-content;
+	box-sizing: border-box;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-template-rows: 15% 85%;
+	column-gap: 20px;
+	padding: 0 63.2px;
+}
+
+.review-card {
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(10px);
+	/* height: 83%; */
+	position: relative;
+	top: 15%;
+	border-radius: 15px;
+	padding: 10% 10% 7% 10%;
+	box-sizing: border-box;
+	display: grid;
+	grid-template-rows: 2fr 2fr 1fr;
+	/* TODO: make it responsive */
+	aspect-ratio: 263 / 210;
+	width: 200px;
+}
+.review-title {
+	height: fit-content;
+	font-size: medium;
+	color: #fff;
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	text-align: center;
+}
+.borrow-date-info {
+	height: fit-content;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-content: space-between; /* Lines spread between top and bottom */
+	text-align: justify;
+	font-size: small;
+	color: #ccc;
+	position: relative;
+}
+.review-description {
+	font-size: large;
+	color: #fff;
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+}
+.return-borrow-button {
+	height: fit-content;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.book-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+.action-link {
+	padding: 4px 8px;
+	box-sizing: border-box;
+	width: 80px;
+	background: none;
+	border: 1px solid white;
+	color: #fff;
+	text-decoration: none;
+	border-radius: 100px;
+	text-align: center;
+	font-size: 0.8rem;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.action-link:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .welcome-content h1 {
@@ -491,39 +755,9 @@ export default {
 	font-size: 1.3rem;
 }
 
-.profile-info {
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
-}
-
-.info-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 10px 0;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.info-item:last-child {
-	border-bottom: none;
-}
-
 .label {
 	color: #ccc;
 	font-weight: 500;
-}
-
-.value {
-	color: #fff;
-	font-weight: 600;
-}
-
-.action-buttons {
-	display: flex;
-	gap: 15px;
-	justify-content: center;
-	flex-wrap: wrap;
 }
 
 .action-btn {
@@ -564,214 +798,29 @@ export default {
 	.join-us-container {
 		padding: 10px;
 	}
-	
+
 	.login-form,
 	.welcome-content {
 		padding: 30px 20px;
 	}
-	
+
 	.login-form h2,
 	.welcome-content h1 {
 		font-size: 1.8rem;
 	}
-	
-	.info-item {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 5px;
-	}
-	
-	.action-buttons {
-		flex-direction: column;
-		align-items: center;
-	}
-	
+
 	.action-btn {
 		width: 100%;
 		max-width: 300px;
 	}
 }
 
-/* 借閱記錄樣式 */
-.borrowing-section {
-	background: rgba(255, 255, 255, 0.05);
-	border-radius: 15px;
-	padding: 25px;
-	margin-bottom: 30px;
-	border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.borrowing-tabs {
-	display: flex;
-	margin-bottom: 25px;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tab-btn {
-	background: none;
-	border: none;
-	color: #ccc;
-	padding: 12px 20px;
-	cursor: pointer;
-	font-family: 'JetBrains Mono', monospace;
-	font-size: 0.9rem;
-	font-weight: 500;
-	transition: all 0.3s ease;
-	border-bottom: 2px solid transparent;
-}
-
-.tab-btn.active {
-	color: #007bff;
-	border-bottom-color: #007bff;
-}
-
-.tab-btn:hover {
-	color: #fff;
-}
-
-.borrowing-content {
-	min-height: 200px;
-}
-
-.books-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 20px;
-}
-
-.book-card {
-	background: rgba(255, 255, 255, 0.08);
-	border-radius: 12px;
-	padding: 20px;
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	transition: all 0.3s ease;
-}
-
-.book-card:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-	border-color: rgba(255, 255, 255, 0.2);
-}
-
-.book-card.history-card {
-	background: rgba(255, 255, 255, 0.03);
-}
-
-.book-info h4 {
-	color: #fff;
-	margin-bottom: 12px;
-	font-size: 1.1rem;
-	font-weight: 600;
-}
-
-.book-info p {
-	color: #ccc;
-	margin-bottom: 8px;
-	font-size: 0.85rem;
-}
-
 .borrow-date,
 .return-date {
-	color: #aaa;
+	color: white;
 }
-
 .days-borrowed {
-	color: #ffc107;
+	color: white;
 	font-weight: 500;
-}
-
-.duration {
-	color: #28a745;
-	font-weight: 500;
-}
-
-.book-actions {
-	margin-top: 15px;
-	display: flex;
-	justify-content: flex-end;
-}
-
-.action-link {
-	padding: 8px 16px;
-	background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-	color: #fff;
-	text-decoration: none;
-	border-radius: 8px;
-	font-size: 0.8rem;
-	font-weight: 500;
-	transition: all 0.3s ease;
-}
-
-.action-link:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
-}
-
-.empty-state {
-	text-align: center;
-	padding: 40px 20px;
-	color: #ccc;
-}
-
-.empty-state p {
-	margin-bottom: 20px;
-	font-size: 1rem;
-}
-
-.browse-link {
-	display: inline-block;
-	padding: 10px 20px;
-	background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-	color: #fff;
-	text-decoration: none;
-	border-radius: 10px;
-	font-size: 0.9rem;
-	font-weight: 500;
-	transition: all 0.3s ease;
-}
-
-.browse-link:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-}
-
-/* 響應式設計 - 借閱記錄 */
-@media (max-width: 768px) {
-	.borrowing-section {
-		padding: 20px 15px;
-	}
-	
-	.borrowing-tabs {
-		flex-direction: column;
-		gap: 10px;
-	}
-	
-	.tab-btn {
-		padding: 10px 15px;
-		border-radius: 8px;
-		border-bottom: none;
-	}
-	
-	.tab-btn.active {
-		background: rgba(0, 123, 255, 0.2);
-		border-bottom: none;
-	}
-	
-	.books-grid {
-		grid-template-columns: 1fr;
-		gap: 15px;
-	}
-	
-	.book-card {
-		padding: 15px;
-	}
-	
-	.book-info h4 {
-		font-size: 1rem;
-	}
-	
-	.book-info p {
-		font-size: 0.8rem;
-	}
 }
 </style>

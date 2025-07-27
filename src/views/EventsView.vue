@@ -110,7 +110,7 @@
 	--picker-height: 50px;
 	--shown-pickers: 3;
 	--card-color: #343434;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 }
 </style>
 
@@ -201,7 +201,7 @@ p {
 	border: none;
 	display: inline-block;
 	color: #fff;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 28px;
 	font-style: normal;
 	font-weight: 400;
@@ -215,7 +215,7 @@ p {
 .period-dropdown .dropdown-content {
 	display: none;
 	color: #fff;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 28px;
 	font-style: normal;
 	font-weight: 400;
@@ -290,7 +290,7 @@ p {
 	scroll-snap-align: center;
 	background-color: black;
 	color: gray;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 28px;
 	font-style: normal;
 	font-weight: 400;
@@ -306,24 +306,24 @@ p {
 </style>
 
 <script>
-import { ref, onMounted, onUnmounted } from "vue"
+import { ref, onMounted, onUnmounted } from 'vue'
 
 export default {
 	setup() {
 		const sections = ref([])
 		const allEventsData = ref([])
 		const timePeriodList = ref([])
-		let selectedPeriod = ref("114-1")
+		let selectedPeriod = ref('114-1')
 
 		const contentContainer = ref(null)
 		const pickerContainer = ref(null)
 		const pickerScrollerContainer = ref(null)
 		const activeSection = ref(1)
-		const selectedSection = ref("Section 1")
+		const selectedSection = ref('Section 1')
 		let scrollTimeout = null
 		let isProgrammaticScroll = false
-		let testSection = ref("Section 1")
-		
+		let testSection = ref('Section 1')
+
 		const scrollToSection = (sectionId) => {
 			isProgrammaticScroll = true
 			const sectionElement = document.getElementById(
@@ -332,7 +332,7 @@ export default {
 			if (sectionElement && contentContainer.value) {
 				contentContainer.value.scrollTo({
 					top: sectionElement.offsetTop + 50,
-					behavior: "smooth",
+					behavior: 'smooth',
 				})
 				activeSection.value = sectionId
 				const section = sections.value.find((s) => s.id === sectionId)
@@ -369,7 +369,7 @@ export default {
 
 		const syncPickerScroll = (sectionId) => {
 			isProgrammaticScroll = true
-			console.log("syncPickerScroll", sectionId)
+			console.log('syncPickerScroll', sectionId)
 			const buttonElement = document.getElementById(`button-${sectionId}`)
 			if (buttonElement == null) return
 			if (buttonElement && pickerScrollerContainer.value) {
@@ -378,7 +378,7 @@ export default {
 						buttonElement.offsetTop -
 						pickerScrollerContainer.value.offsetTop -
 						50,
-					behavior: "smooth",
+					behavior: 'smooth',
 				})
 			}
 			setTimeout(() => {
@@ -414,7 +414,7 @@ export default {
 			for (const section of sections.value) {
 				const button = document.getElementById(`button-${section.id}`)
 				if (section.id === currentSection) {
-					button.classList.add("picker-active")
+					button.classList.add('picker-active')
 					// Scroll to the section in the content container
 					// This should be a async operation
 					// TODO
@@ -424,7 +424,7 @@ export default {
 					// }, 1000);
 					// syncPickerScroll(section.id);
 				} else {
-					button.classList.remove("picker-active")
+					button.classList.remove('picker-active')
 				}
 			}
 		}
@@ -437,7 +437,7 @@ export default {
 			const containerRect = pickerContainer.value.getBoundingClientRect()
 			const containerCenter = containerRect.top + containerRect.height / 2
 			const containerHeight = containerRect.height
-			const divs = pickerContainer.value.querySelectorAll(".picker")
+			const divs = pickerContainer.value.querySelectorAll('.picker')
 
 			divs.forEach((div) => {
 				const divRect = div.getBoundingClientRect()
@@ -460,8 +460,8 @@ export default {
 			// }, 100)
 		}
 		const toggleDropdown = () => {
-			const dropdownContent = document.getElementById("dropdown-content")
-			dropdownContent.classList.toggle("expand")
+			const dropdownContent = document.getElementById('dropdown-content')
+			dropdownContent.classList.toggle('expand')
 		}
 		const selectPeriod = (period) => {
 			selectedPeriod.value = period
@@ -474,26 +474,28 @@ export default {
 		const fetchEventsData = async () => {
 			try {
 				const res = await fetch('/api/events')
-				
+
 				if (!res.ok) {
 					throw new Error(`HTTP 錯誤! 狀態: ${res.status}`)
 				}
-				
+
 				const rawData = await res.json()
-				
+
 				if (Array.isArray(rawData) && rawData.length > 1) {
 					allEventsData.value = rawData.slice(1) // 跳過標題行
-					
+
 					// 提取所有學期並排序
 					const periodsSet = new Set()
-					allEventsData.value.forEach(event => {
+					allEventsData.value.forEach((event) => {
 						if (Array.isArray(event) && event[0]) {
 							periodsSet.add(event[0])
 						}
 					})
-					
-					timePeriodList.value = Array.from(periodsSet).sort().reverse() // 最新學期在前
-					
+
+					timePeriodList.value = Array.from(periodsSet)
+						.sort()
+						.reverse() // 最新學期在前
+
 					// 設定預設選中最新學期
 					if (timePeriodList.value.length > 0) {
 						selectedPeriod.value = timePeriodList.value[0]
@@ -502,25 +504,28 @@ export default {
 						sections.value = [
 							{
 								id: 1,
-								title: "沒有資料",
-								content: "找不到任何學期資料。",
-							}
+								title: '沒有資料',
+								content: '找不到任何學期資料。',
+							},
 						]
 					}
 				} else {
 					sections.value = [
 						{
 							id: 1,
-							title: "資料不足",
-							content: "Google Sheets 中沒有足夠的資料。",
-						}
+							title: '資料不足',
+							content: 'Google Sheets 中沒有足夠的資料。',
+						},
 					]
 				}
 			} catch (error) {
 				console.error('獲取 Events 資料時發生錯誤:', error)
-				
+
 				let errorMessage = '未知錯誤'
-				if (error.name === 'TypeError' && error.message.includes('fetch')) {
+				if (
+					error.name === 'TypeError' &&
+					error.message.includes('fetch')
+				) {
 					errorMessage = '無法連接到伺服器，請檢查伺服器是否啟動'
 				} else if (error.message.includes('HTTP 錯誤')) {
 					errorMessage = `伺服器回應錯誤: ${error.message}`
@@ -529,29 +534,29 @@ export default {
 				} else {
 					errorMessage = error.message
 				}
-				
+
 				sections.value = [
 					{
 						id: 1,
-						title: "載入失敗",
+						title: '載入失敗',
 						content: `錯誤詳情: ${errorMessage}`,
-					}
+					},
 				]
 			}
 		}
 
 		// 根據選中的學期更新 sections
 		const updateSectionsByPeriod = (period) => {
-			const filteredEvents = allEventsData.value.filter(event => 
-				Array.isArray(event) && event[0] === period
+			const filteredEvents = allEventsData.value.filter(
+				(event) => Array.isArray(event) && event[0] === period
 			)
-			
+
 			sections.value = filteredEvents.map((event, index) => ({
 				id: index + 1,
-				title: event[1] || `活動 ${index + 1}`,  // B欄：標題
-				content: event[2] || '暫無內容',          // C欄：內容
+				title: event[1] || `活動 ${index + 1}`, // B欄：標題
+				content: event[2] || '暫無內容', // C欄：內容
 			}))
-			
+
 			// 重置選中的 section
 			if (sections.value.length > 0) {
 				activeSection.value = 1
@@ -560,9 +565,9 @@ export default {
 				sections.value = [
 					{
 						id: 1,
-						title: "沒有事件",
+						title: '沒有事件',
 						content: `學期 ${period} 沒有找到任何事件。`,
-					}
+					},
 				]
 			}
 		}
@@ -571,11 +576,11 @@ export default {
 			fetchEventsData()
 			scrollToSection(1)
 			updateRotations()
-			window.addEventListener("resize", updateRotations)
+			window.addEventListener('resize', updateRotations)
 		})
 
 		onUnmounted(() => {
-			window.removeEventListener("resize", updateRotations)
+			window.removeEventListener('resize', updateRotations)
 		})
 
 		return {
