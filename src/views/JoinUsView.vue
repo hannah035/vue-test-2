@@ -58,7 +58,7 @@
 									/>
 								</circle>
 							</svg>
-							Logging in...
+						
 						</span>
 						<span v-else>Login</span>
 					</button>
@@ -199,6 +199,14 @@
 						</template>
 					</div>
 				</div>
+				<button
+					type="submit"
+					:disabled="loginLoading"
+					class="logout-btn"
+					@click="logout"
+				>
+					<span>Log out</span>
+				</button>
 			</div>
 		</div>
 	</div>
@@ -347,6 +355,7 @@ export default {
 			} catch (error) {
 				console.error('Failed to load borrowing records:', error)
 			}
+			this.initAttributes()
 		},
 
 		calculateDaysBorrowed(borrowDate) {
@@ -396,18 +405,14 @@ export default {
 			const cardWidth = 200 // 假設每個卡片的寬度為 200px
 			const cardGap = 10 // 假設卡片之間的間距為 10px
 			const sepLineWidth =
-				(cardWidth + cardGap) * (this.totalCount + 2) - cardGap
+				(cardWidth + cardGap) * (this.totalCount + 1) - cardGap
 			// 我不知道為什麼要加 1 !!!!!
 
 			sepLine.style.width = `calc(${sepLineWidth}px - 63.2px)`
 		},
 	},
-	beforeMount() {
-		this.checkLoginStatus()
-	},
 	mounted() {
 		this.checkLoginStatus()
-		this.initAttributes()
 	},
 }
 </script>
@@ -520,14 +525,14 @@ export default {
 }
 
 .login-btn:hover:not(:disabled) {
-	transform: translate(-50%, -2px);
-	box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+	transform: translate(-50%,  -2px);
+	/* box-shadow: 0 5px 15px ; */
 }
 
 .login-btn:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
-	transform: none;
+	transform: translate(-50%, 0);
 }
 
 .spinner {
@@ -585,7 +590,7 @@ export default {
 	gap: 20px;
 	width: 40%;
 	left: 10%;
-	top: 11%;
+	top: 6%;
 	bottom: 50%;
 	position: relative;
 	/* TODO: make it responsive */
@@ -608,11 +613,39 @@ export default {
 	grid-template-rows: 1fr; */
 	bottom: 0;
 	gap: 10px;
-	height: 50%;
+	height: 55%;
 	width: 100%;
 	position: absolute;
 	font-size: 24px;
 }
+.logout-btn {
+	position: absolute;
+	right: 10%;
+	bottom: 10px;
+	height: 40px;
+	width: 100%;
+	max-width: 120px;
+	padding: 15px;
+	color: #fff;
+	border: none;
+	border-radius: 100px;
+	border: white solid 1px;
+	box-sizing: border-box;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	font-family: 'JetBrains Mono', monospace;
+}
+.logout-btn:hover {
+	transform: translate(0,  -2px);
+	/* box-shadow: 0 5px 15px ; */
+}
+
 .reviews-container {
 	height: 100%;
 	position: relative;
