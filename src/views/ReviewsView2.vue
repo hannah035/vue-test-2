@@ -12,96 +12,56 @@
 		</div>
 		
 		<!-- 主要內容 -->
-		<div v-else-if="reviews.length > 0">
-			<!-- Top Section -->
-			<div class="top-section">
-				<div class="tags-section">
-					<div class="tags-header">
-						<span class="tags-title">tags</span>
-						<div class="tags-actions">
-							<span class="selected-count" v-if="selectedTags.length > 0">
-								select {{ selectedTags.length }} tags
-							</span>
-							<button 
-								v-if="selectedTags.length > 0" 
-								@click="clearAllTags"
-								class="clear-tags-btn"
-							>
-								清除所有
-							</button>
-						</div>
-					</div>
-					<div class="tags-list">
-						<span 
-							class="tag" 
-							v-for="tag in tags" 
-							:key="tag"
-							:class="{ active: selectedTags.includes(tag) }"
-							@click="toggleTag(tag)"
-						>
-							#{{ tag }}
-							<span class="tag-count">({{ getTagCount(tag) }})</span>
-						</span>
-					</div>
-				</div>
-				<div class="sort-section">
-					<div class="results-info">
-						<span class="total-count">
-							Total: {{ filteredReviews.length }} reviews
-							<span v-if="selectedTags.length > 0" class="filter-info">
-								(filtered by {{ selectedTags.length }} tags)
-							</span>
-						</span>
-					</div>
-					<div class="sort-controls">
-						<label>Sorted by</label>
-						<select v-model="sortBy" @change="sortReviews">
-							<option value="date">Date</option>
-							<option value="title">Title</option>
-							<option value="rating">Rating</option>
-						</select>
-					</div>
-				</div>
-			</div>
-
-			<!-- Main Review Card -->
-			<div class="main-card">
-				<div class="card-header">
-					<h2 class="card-title">{{ currentReview.title }}</h2>
-					<div class="card-tags">
-						<span class="tag" v-for="tag in currentReview.tags" :key="tag"
-							:class="{ 'selected-tag': selectedTags.includes(tag) }">
-							#{{ tag }}
-						</span>
-						<span v-if="selectedTags.length > 0 && getMatchingTagsCount(currentReview) > 0" 
-							class="match-info">
-							Matches {{ getMatchingTagsCount(currentReview) }} of {{ selectedTags.length }} selected tags
-						</span>
-					</div>
-				</div>
+		<div v-else-if="reviews.length > 0" class="main-layout">
+			<!-- 左側主要評論區域 -->
+			<div class="main-content">
+				<!-- 標題 -->
+				<h1 class="main-title">{{ currentReview.title || 'Title' }}</h1>
 				
-				<div class="card-content">
+				<!-- 標籤顯示 -->
+				<div class="tags-display">
+					<span 
+						v-for="tag in currentReview.tags" 
+						:key="tag" 
+						class="tag-item"
+						:class="{ active: selectedTags.includes(tag) }"
+					>
+						#{{ tag }}
+					</span>
+				</div>
+
+				<!-- 評論內容 -->
+				<div class="review-content">
 					<p>{{ currentReview.content }}</p>
 				</div>
 
-				<div class="card-footer">
-					<div class="rating">
+				<!-- 評分 -->
+				<div class="rating-section">
+					<div class="stars">
 						<span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= currentReview.rating }">★</span>
-					</div>
-					<div class="author-info">
-						<span class="author">{{ currentReview.author }}</span>
-						<span class="date">{{ currentReview.date }}</span>
-					</div>
-					
-					<!-- 回覆按鈕 (只有登入用戶可見) -->
-					<div v-if="isLoggedIn" class="action-buttons">
-						<button @click="toggleReplyForm" class="reply-btn">
-							{{ showReplyForm ? 'Cancel Reply' : 'Reply to Review' }}
-						</button>
 					</div>
 				</div>
 
-				<!-- 回覆評論表單 -->
+				<!-- 作者和日期 -->
+				<div class="author-section">
+					<div class="author-info">
+						<span class="author-name">{{ currentReview.author }}</span>
+						<span class="review-date">{{ currentReview.date }}</span>
+					</div>
+				</div>
+
+				<!-- Navigation Arrows -->
+				<button class="nav-arrow nav-left" @click="previousReview" :disabled="currentIndex === 0">
+					&#8249;
+				</button>
+				<button class="nav-arrow nav-right" @click="nextReview" :disabled="currentIndex === reviews.length - 1">
+					&#8250;
+				</button>
+			</div>
+
+			<!-- 右側評論列表 -->
+			<div class="comments-sidebar">
+				<!-- 回覆主評論的表單 -->
 				<div v-if="showReplyForm && isLoggedIn" class="reply-form">
 					<h4>Reply to this review</h4>
 					<textarea 
@@ -118,156 +78,177 @@
 					</div>
 				</div>
 
-				<!-- Navigation Arrows -->
-				<button class="nav-arrow nav-left" @click="previousReview" :disabled="currentIndex === 0">
-					&#8249;
-				</button>
-				<button class="nav-arrow nav-right" @click="nextReview" :disabled="currentIndex === reviews.length - 1">
-					&#8250;
-				</button>
-			</div>
-
-			<!-- 評論回覆區域 -->
-			<div v-if="currentReview.comments && currentReview.comments.length > 0" class="comments-section">
-				<h3>Comments</h3>
-				<div v-for="comment in currentReview.comments" :key="comment.id" class="comment-item">
-					<div class="comment-header">
-						<span class="comment-author">{{ comment.author }}</span>
-						<span class="comment-date">{{ comment.date }}</span>
-					</div>
-					<div class="comment-content">{{ comment.content }}</div>
-					
-					<!-- 回覆按鈕 (只有登入用戶可見) -->
-					<div v-if="isLoggedIn" class="comment-actions">
-						<button @click="toggleCommentReply(comment.id)" class="reply-btn small">
-							{{ showCommentReply === comment.id ? 'Cancel' : 'Reply' }}
-						</button>
-					</div>
-					
-					<!-- 回覆評論表單 -->
-					<div v-if="showCommentReply === comment.id && isLoggedIn" class="reply-form small">
-						<textarea 
-							v-model="replyContent" 
-							placeholder="Write your reply..."
-							class="reply-textarea"
-							:disabled="submittingReply"
-						></textarea>
-						<div class="form-buttons">
-							<button @click="submitReply(comment.id)" :disabled="!replyContent.trim() || submittingReply" class="submit-btn">
-								{{ submittingReply ? 'Posting...' : 'Post Reply' }}
-							</button>
-							<button @click="cancelCommentReply" class="cancel-btn">Cancel</button>
+				<!-- 評論回覆區域 -->
+				<div v-if="currentReview.comments && currentReview.comments.length > 0">
+					<div v-for="comment in currentReview.comments" :key="comment.id" class="comment-item">
+						<div class="comment-header">
+							<span class="comment-name">{{ comment.author }}</span>
 						</div>
-					</div>
-					
-					<!-- 顯示回覆 -->
-					<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
-						<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-							<div class="reply-header">
-								<span class="reply-author">{{ reply.author }}</span>
-								<span class="reply-date">{{ reply.date }}</span>
+						<div class="comment-text">{{ comment.content }}</div>
+						
+						<!-- 回覆按鈕 (只有登入用戶可見) -->
+						<div v-if="isLoggedIn" class="comment-actions">
+							<button @click="toggleCommentReply(comment.id)" class="reply-arrow">
+								{{ showCommentReply === comment.id ? '✕' : '←' }}
+							</button>
+						</div>
+						
+						<!-- 回覆評論表單 -->
+						<div v-if="showCommentReply === comment.id && isLoggedIn" class="reply-form small">
+							<textarea 
+								v-model="replyContent" 
+								placeholder="Write your reply..."
+								class="reply-textarea"
+								:disabled="submittingReply"
+							></textarea>
+							<div class="form-buttons">
+								<button @click="submitReply(comment.id)" :disabled="!replyContent.trim() || submittingReply" class="submit-btn">
+									{{ submittingReply ? 'Posting...' : 'Post Reply' }}
+								</button>
+								<button @click="cancelCommentReply" class="cancel-btn">Cancel</button>
 							</div>
-							<div class="reply-content">{{ reply.content }}</div>
+						</div>
+						
+						<!-- 顯示回覆 -->
+						<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
+							<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
+								<div class="reply-header">
+									<span class="reply-author">{{ reply.author }}</span>
+									<span class="reply-date">{{ reply.date }}</span>
+								</div>
+								<div class="reply-content">{{ reply.content }}</div>
+							</div>
 						</div>
 					</div>
 				</div>
+				
+				<!-- 如果沒有評論，顯示預設的評論項目 -->
+				<div v-else-if="!showReplyForm">
+					<div class="comment-item" v-for="n in 3" :key="'default-' + n">
+						<div class="comment-header">
+							<span class="comment-name">Name</span>
+						</div>
+						<div class="comment-text">
+							contentscontentscontentscontentscontentscontentscontentscontentscontentscontentscontentscontentscontents
+						</div>
+						<button class="reply-arrow">←</button>
+					</div>
+				</div>
+				
+				<!-- 新增評論按鈕 -->
+				<button class="add-comment-btn" @click="toggleReplyForm" v-if="isLoggedIn">
+					{{ showReplyForm ? '✕' : '＋' }}
+				</button>
+				
+				<!-- 新增 Review 按鈕 -->
+				<button class="add-review-btn" @click="toggleReviewForm" v-if="isLoggedIn">
+					{{ showReviewForm ? '✕' : 'Add Review' }}
+				</button>
+				
+				<!-- 新增 Review 表單 -->
+				<div v-if="showReviewForm && isLoggedIn" class="add-review-form">
+					<h4>Add New Review</h4>
+					<div class="form-group">
+						<label>Subject:</label>
+						<input 
+							v-model="newReview.subject" 
+							type="text" 
+							placeholder="Enter review subject..."
+							class="review-input"
+							:disabled="submittingReview"
+						/>
+					</div>
+					<div class="form-group">
+						<label>Rating:</label>
+						<div class="rating-input">
+							<span 
+								v-for="n in 5" 
+								:key="n" 
+								class="star-input" 
+								:class="{ active: n <= newReview.rate }"
+								@click="setRating(n)"
+							>★</span>
+						</div>
+					</div>
+					<div class="form-group">
+						<label>Content:</label>
+						<textarea 
+							v-model="newReview.content" 
+							placeholder="Write your review..."
+							class="review-textarea"
+							:disabled="submittingReview"
+						></textarea>
+					</div>
+					<div class="form-group">
+						<label>Tags (comma separated):</label>
+						<input 
+							v-model="newReview.tagsInput" 
+							type="text" 
+							placeholder="e.g. 電影, 科幻, 哲學"
+							class="review-input"
+							:disabled="submittingReview"
+						/>
+					</div>
+					<div class="form-buttons">
+						<button @click="submitReview" :disabled="!isValidReview || submittingReview" class="submit-btn">
+							{{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+						</button>
+						<button @click="cancelReviewForm" class="cancel-btn">Cancel</button>
+					</div>
+				</div>
+				
+				<!-- 如果未登入，顯示登入提示 -->
+				<div v-else class="login-prompt">
+					<p>Login to add comments and reviews</p>
+				</div>
 			</div>
 
-			<!-- Bottom List -->
-			<div class="review-list">
-				<div 
-					v-for="(review, index) in reviews" 
-					:key="index"
-					class="review-item"
-					:class="{ active: index === currentIndex }"
-					@click="selectReview(index)"
-				>
-					<div class="item-header">
-						<span class="item-author">{{ review.author }}</span>
-						<span class="item-date">{{ review.date }}</span>
-						<span v-if="selectedTags.length > 0 && getMatchingTagsCount(review) > 0" 
-							class="match-count">
-							{{ getMatchingTagsCount(review) }}/{{ selectedTags.length }} tags
+			<!-- 底部標籤選擇區域 -->
+			<div class="bottom-tags">
+				<!-- Tags 功能區域 -->
+				<div class="tags-header-info">
+					<span class="selected-count" v-if="selectedTags.length > 0">
+						select {{ selectedTags.length }} tags
+					</span>
+					<button 
+						v-if="selectedTags.length > 0" 
+						@click="clearAllTags"
+						class="clear-tags-btn"
+					>
+						清除所有
+					</button>
+				</div>
+				
+				<!-- 標籤列表 -->
+				<div class="tags-container">
+					<div 
+						v-for="tag in tags" 
+						:key="tag"
+						class="tag-selector"
+						:class="{ active: selectedTags.includes(tag) }"
+						@click="toggleTag(tag)"
+					>
+						<span class="tag-text">#{{ tag }}({{ getTagCount(tag) }})</span>
+					</div>
+				</div>
+
+				<!-- 排序和結果資訊 -->
+				<div class="sort-info">
+					<div class="results-info">
+						<span class="total-count">
+							Total: {{ filteredReviews.length }} reviews
+							<span v-if="selectedTags.length > 0" class="filter-info">
+								(filtered by {{ selectedTags.length }} tags)
+							</span>
 						</span>
 					</div>
-					<div class="item-content">
-						{{ review.content }}
-					</div>
-					
-					<!-- 標籤顯示 -->
-					<div v-if="review.tags && review.tags.length > 0" class="item-tags">
-						<span class="item-tag" v-for="tag in review.tags" :key="tag"
-							:class="{ 'selected-tag': selectedTags.includes(tag) }">
-							#{{ tag }}
-						</span>
-					</div>
-					
-					<!-- 回覆按鈕 (只有登入用戶可見) -->
-					<div v-if="isLoggedIn" class="item-action-buttons">
-						<button @click.stop="toggleReviewReply(review.id)" class="reply-btn small">
-							{{ showReviewReply === review.id ? 'Cancel' : 'Reply to Review' }}
-						</button>
-					</div>
-					
-					<!-- 回覆表單 -->
-					<div v-if="showReviewReply === review.id && isLoggedIn" class="reply-form small">
-						<textarea 
-							v-model="reviewReplyContent" 
-							placeholder="Write your reply to this review..."
-							class="reply-textarea"
-							:disabled="submittingReply"
-						></textarea>
-						<div class="form-buttons">
-							<button @click="submitReviewReply(review.id)" :disabled="!reviewReplyContent.trim() || submittingReply" class="submit-btn">
-								{{ submittingReply ? 'Posting...' : 'Post Reply' }}
-							</button>
-							<button @click="cancelReviewReply" class="cancel-btn">Cancel</button>
-						</div>
-					</div>
-					
-					<!-- 顯示該評論的回覆 -->
-					<div v-if="review.comments && review.comments.length > 0" class="review-comments">
-						<div v-for="comment in review.comments" :key="comment.id" class="review-comment-item">
-							<div class="comment-header">
-								<span class="comment-author">{{ comment.author }}</span>
-								<span class="comment-date">{{ comment.date }}</span>
-							</div>
-							<div class="comment-content">{{ comment.content }}</div>
-							
-							<!-- 回覆評論按鈕 (只有登入用戶可見) -->
-							<div v-if="isLoggedIn" class="comment-actions">
-								<button @click.stop="toggleCommentReplyInList(comment.id)" class="reply-btn tiny">
-									{{ showCommentReplyInList === comment.id ? 'Cancel' : 'Reply' }}
-								</button>
-							</div>
-							
-							<!-- 回覆評論表單 -->
-							<div v-if="showCommentReplyInList === comment.id && isLoggedIn" class="reply-form tiny">
-								<textarea 
-									v-model="commentReplyContent" 
-									placeholder="Write your reply..."
-									class="reply-textarea"
-									:disabled="submittingReply"
-								></textarea>
-								<div class="form-buttons">
-									<button @click="submitCommentReplyInList(review.id, comment.id)" :disabled="!commentReplyContent.trim() || submittingReply" class="submit-btn">
-										{{ submittingReply ? 'Posting...' : 'Post Reply' }}
-									</button>
-									<button @click="cancelCommentReplyInList" class="cancel-btn">Cancel</button>
-								</div>
-							</div>
-							
-							<!-- 顯示回覆 -->
-							<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
-								<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-									<div class="reply-header">
-										<span class="reply-author">{{ reply.author }}</span>
-										<span class="reply-date">{{ reply.date }}</span>
-									</div>
-									<div class="reply-content">{{ reply.content }}</div>
-								</div>
-							</div>
-						</div>
+					<div class="sort-controls">
+						<label>Sorted by</label>
+						<select v-model="sortBy" @change="sortReviews">
+							<option value="date">Date</option>
+							<option value="title">Title</option>
+							<option value="rating">Rating</option>
+						</select>
 					</div>
 				</div>
 			</div>
@@ -307,7 +288,17 @@ export default {
 			commentContent: '',
 			reviewReplyContent: '', // 列表區域評論回覆內容
 			commentReplyContent: '', // 列表區域評論的回覆內容
-			submittingReply: false
+			submittingReply: false,
+			// 新增 Review 功能
+			showReviewForm: false,
+			submittingReview: false,
+			newReview: {
+				subject: '',
+				rate: 0,
+				content: '',
+				tagsInput: '',
+				tags: []
+			}
 		}
 	},
 	computed: {
@@ -343,6 +334,11 @@ export default {
 				// 如果匹配數量相同，按日期降序排序
 				return new Date(b.date) - new Date(a.date)
 			})
+		},
+		isValidReview() {
+			return this.newReview.subject.trim() && 
+			       this.newReview.content.trim() && 
+			       this.newReview.rate > 0
 		}
 	},
 	watch: {
@@ -717,6 +713,79 @@ export default {
 				return 'error'
 			}
 		},
+
+		// 新增 Review 相關方法
+		toggleReviewForm() {
+			this.showReviewForm = !this.showReviewForm
+			if (!this.showReviewForm) {
+				this.resetReviewForm()
+			}
+		},
+
+		cancelReviewForm() {
+			this.showReviewForm = false
+			this.resetReviewForm()
+		},
+
+		resetReviewForm() {
+			this.newReview = {
+				subject: '',
+				rate: 0,
+				content: '',
+				tagsInput: '',
+				tags: []
+			}
+		},
+
+		setRating(rating) {
+			this.newReview.rate = rating
+		},
+
+		async submitReview() {
+			if (!this.isValidReview || !this.isLoggedIn) {
+				return
+			}
+
+			try {
+				this.submittingReview = true
+				
+				// 處理標籤
+				const tags = this.newReview.tagsInput
+					.split(',')
+					.map(tag => tag.trim())
+					.filter(tag => tag.length > 0)
+
+				const reviewData = {
+					userId: this.currentUser._id,
+					subject: this.newReview.subject.trim(),
+					rate: this.newReview.rate,
+					content: this.newReview.content.trim(),
+					tags: tags
+				}
+
+				const response = await reviewsService.createReview(reviewData)
+				
+				if (response.success) {
+					// 重新獲取評論列表以顯示新的評論
+					await this.fetchReviews()
+					await this.fetchTags()
+					
+					// 清空表單
+					this.resetReviewForm()
+					this.showReviewForm = false
+					
+					// 顯示成功訊息
+					alert('Review posted successfully!')
+				} else {
+					alert('Failed to post review')
+				}
+			} catch (error) {
+				console.error('Error posting review:', error)
+				alert('Failed to post review')
+			} finally {
+				this.submittingReview = false
+			}
+		},
 	},
 	mounted() {
 		// 檢查登入狀態
@@ -759,229 +828,126 @@ export default {
 	flex-direction: column;
 }
 
-/* Top Section */
-.top-section {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 30px;
+/* 主要布局 */
+.main-layout {
+	display: grid;
+	grid-template-columns: 1fr 350px;
+	grid-template-rows: 1fr auto;
+	gap: 20px;
+	height: calc(100vh - 40px);
+	grid-template-areas: 
+		"content sidebar"
+		"tags tags";
 }
 
-.tags-section {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	flex: 1;
-}
-
-.tags-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 5px;
-}
-
-.tags-title {
-	font-weight: bold;
-	color: #fff;
-	font-size: 16px;
-}
-
-.tags-actions {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.selected-count {
-	color: #007acc;
-	font-size: 14px;
-}
-
-.clear-tags-btn {
-	background-color: #666;
-	color: #fff;
-	border: none;
-	padding: 4px 8px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 12px;
-	transition: background-color 0.3s;
-}
-
-.clear-tags-btn:hover {
-	background-color: #777;
-}
-
-.tags-list {
-	display: flex;
-	gap: 15px;
-	flex-wrap: wrap;
-}
-
-.tag {
-	color: #fff;
-	font-size: 16px;
-	padding: 6px 12px;
-	background-color: #333;
-	border-radius: 20px;
-	cursor: pointer;
-	transition: all 0.3s;
-	border: 2px solid transparent;
-	user-select: none;
-}
-
-.tag:hover {
-	background-color: #444;
-	transform: translateY(-2px);
-}
-
-.tag.active {
-	background-color: #007acc;
-	border-color: #0056b3;
-}
-
-.tag-count {
-	margin-left: 5px;
-	font-size: 12px;
-	opacity: 0.8;
-}
-
-.sort-section {
+.main-content {
+	grid-area: content;
 	display: flex;
 	flex-direction: column;
-	align-items: flex-end;
-	gap: 8px;
-}
-
-.results-info {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 4px;
-}
-
-.total-count {
-	color: #fff;
-	font-size: 14px;
-	font-weight: bold;
-}
-
-.filter-info {
-	color: #007acc;
-	font-size: 12px;
-	font-weight: normal;
-}
-
-.sort-controls {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.sort-controls label {
-	color: #fff;
-	font-size: 16px;
-}
-
-.sort-controls select {
-	background-color: #333;
-	color: #fff;
-	border: 1px solid #555;
-	padding: 5px 10px;
-	border-radius: 4px;
-	font-family: inherit;
-}
-
-/* Main Card */
-.main-card {
-	background-color: #333;
-	border-radius: 15px;
-	padding: 30px;
-	margin-bottom: 30px;
+	gap: 20px;
+	overflow-y: auto;
+	padding: 20px;
+	border: 1px solid #333;
 	position: relative;
-	min-height: auto;
-	height: auto;
+	max-height: calc(100vh - 200px);
 }
 
-.card-header {
+.comments-sidebar {
+	grid-area: sidebar;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	padding: 20px;
+	border: 1px solid #333;
+	overflow-y: auto;
+	min-height: 0;
+	max-height: calc(100vh - 200px);
+}
+
+.bottom-tags {
+	grid-area: tags;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	padding: 15px;
+	border: 1px solid #333;
+}
+
+/* 左側主要內容樣式 */
+.main-title {
+	font-size: 24px;
+	font-weight: bold;
+	margin: 0 0 15px 0;
+	color: #fff;
+}
+
+.tags-display {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
 	margin-bottom: 20px;
 }
 
-.card-title {
-	font-size: 16px;
-	font-weight: bold;
-	margin: 0 0 10px 0;
-}
-
-.card-tags {
-	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
-	align-items: center;
-}
-
-.card-tags .tag.selected-tag {
-	background-color: #007acc;
-	border-color: #0056b3;
+.tag-item {
+	background-color: #333;
 	color: #fff;
-}
-
-.match-info {
-	color: #00cc66;
+	padding: 4px 8px;
+	border-radius: 4px;
 	font-size: 12px;
-	font-weight: bold;
-	margin-left: 10px;
-	padding: 2px 8px;
-	background-color: rgba(0, 204, 102, 0.1);
-	border-radius: 10px;
-	border: 1px solid #00cc66;
 }
 
-.card-content {
-	margin-bottom: 30px;
+.tag-item.active {
+	background-color: #007acc;
+}
+
+.review-content {
+	flex: 1;
 	line-height: 1.6;
-	font-size: 16px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	white-space: pre-wrap;
+	margin-bottom: 20px;
 }
 
-.card-footer {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+.review-content p {
+	margin: 0;
+	word-break: break-word;
 }
 
-.rating {
+.rating-section {
+	margin-bottom: 20px;
+}
+
+.stars {
 	display: flex;
 	gap: 2px;
 }
 
 .star {
 	color: #444;
-	font-size: 16px;
-	transition: color 0.3s;
+	font-size: 20px;
 }
 
 .star.filled {
 	color: #ffd700;
 }
 
+.author-section {
+	border-top: 1px solid #333;
+	padding-top: 15px;
+	margin-bottom: 15px;
+}
+
 .author-info {
 	display: flex;
-	gap: 20px;
+	justify-content: space-between;
 	align-items: center;
 }
 
-.author {
+.author-name {
 	font-weight: bold;
-	font-size: 16px;
+	color: #fff;
 }
 
-.date {
+.review-date {
 	color: #ccc;
-	font-size: 16px;
 }
 
 /* Navigation Arrows */
@@ -1019,124 +985,280 @@ export default {
 	right: -25px;
 }
 
-/* Review List */
-.review-list {
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
-	margin-bottom: 50px;
+/* 右側評論區域 */
+.comment-item {
+	background-color: #111;
+	border-radius: 8px;
+	padding: 15px;
+	position: relative;
+	border: 1px solid #333;
 }
 
-.review-item {
-	background-color: #222;
-	border-radius: 10px;
-	padding: 20px;
+.comment-header {
+	margin-bottom: 8px;
+}
+
+.comment-name {
+	font-weight: bold;
+	color: #fff;
+}
+
+.comment-text {
+	color: #ccc;
+	line-height: 1.4;
+	word-break: break-word;
+}
+
+.reply-arrow {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	background: none;
+	border: none;
+	color: #007acc;
+	font-size: 16px;
 	cursor: pointer;
-	transition: all 0.3s;
-	border: 2px solid transparent;
-	min-height: auto;
-	height: auto;
 }
 
-.review-item:hover {
-	background-color: #2a2a2a;
-	transform: translateX(5px);
+.add-comment-btn {
+	background-color: #333;
+	border: 1px solid #555;
+	color: #fff;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	font-size: 20px;
+	cursor: pointer;
+	transition: background-color 0.3s;
 }
 
-.review-item.active {
-	border-color: #555;
-	background-color: #2a2a2a;
+.add-comment-btn:hover {
+	background-color: #444;
 }
 
-.item-header {
+.add-review-btn {
+	background-color: #007acc;
+	border: 1px solid #0056b3;
+	color: #fff;
+	padding: 12px 20px;
+	border-radius: 6px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+	margin-top: 10px;
+	width: 100%;
+}
+
+.add-review-btn:hover {
+	background-color: #0056b3;
+}
+
+.add-review-form {
+	margin-top: 15px;
+	padding: 20px;
+	background-color: #1a1a1a;
+	border-radius: 8px;
+	border: 1px solid #333;
+	position: relative;
+}
+
+.add-review-form h4 {
+	margin: 0 0 15px 0;
+	color: #fff;
+	font-size: 16px;
+}
+
+.form-group {
+	margin-bottom: 18px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 6px;
+	color: #ccc;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.review-input {
+	width: 100%;
+	background-color: #333;
+	color: #fff;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 10px 12px;
+	font-family: inherit;
+	font-size: 14px;
+	box-sizing: border-box;
+	min-height: 40px;
+}
+
+.review-input:focus {
+	outline: none;
+	border-color: #777;
+}
+
+.review-input:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.review-textarea {
+	width: 100%;
+	min-height: 120px;
+	background-color: #333;
+	color: #fff;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 10px 12px;
+	font-family: inherit;
+	font-size: 14px;
+	resize: vertical;
+	box-sizing: border-box;
+	line-height: 1.4;
+}
+
+.review-textarea:focus {
+	outline: none;
+	border-color: #777;
+}
+
+.review-textarea:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.rating-input {
+	display: flex;
+	gap: 5px;
+	margin-top: 5px;
+}
+
+.star-input {
+	color: #555;
+	font-size: 24px;
+	cursor: pointer;
+	transition: color 0.2s;
+	user-select: none;
+}
+
+.star-input:hover,
+.star-input.active {
+	color: #ffd700;
+}
+
+.login-prompt {
+	text-align: center;
+	padding: 20px;
+	color: #ccc;
+	font-style: italic;
+}
+
+.login-prompt p {
+	margin: 0;
+}
+
+/* 底部標籤區域 */
+.tags-header-info {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 10px;
-	font-weight: bold;
 }
 
-.item-author {
+.selected-count {
+	color: #007acc;
+	font-size: 14px;
+}
+
+.clear-tags-btn {
+	background-color: #666;
 	color: #fff;
-	font-size: 16px;
-}
-
-.item-date {
-	color: #ccc;
-	font-size: 16px;
-}
-
-.match-count {
-	color: #00cc66;
+	border: none;
+	padding: 4px 8px;
+	border-radius: 4px;
+	cursor: pointer;
 	font-size: 12px;
-	font-weight: bold;
-	padding: 2px 6px;
-	background-color: rgba(0, 204, 102, 0.1);
-	border-radius: 8px;
-	border: 1px solid #00cc66;
+	transition: background-color 0.3s;
 }
 
-.item-content {
-	color: #ddd;
-	line-height: 1.4;
-	margin-bottom: 10px;
-	font-size: 16px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
+.clear-tags-btn:hover {
+	background-color: #777;
 }
 
-.item-tags {
+.tags-container {
 	display: flex;
-	gap: 6px;
+	gap: 10px;
+	align-items: center;
 	flex-wrap: wrap;
-	margin-bottom: 10px;
+	margin-bottom: 15px;
 }
 
-.item-tag {
-	color: #ccc;
-	font-size: 12px;
-	padding: 2px 6px;
+.tag-selector {
+	background-color: #222;
+	border: 1px solid #444;
+	color: #fff;
+	padding: 8px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: all 0.3s;
+	white-space: nowrap;
+}
+
+.tag-selector:hover {
 	background-color: #333;
-	border-radius: 10px;
-	border: 1px solid #555;
 }
 
-.item-tag.selected-tag {
+.tag-selector.active {
 	background-color: #007acc;
 	border-color: #0056b3;
-	color: #fff;
 }
 
-.nested-item {
-	margin-left: 20px;
-	padding-left: 15px;
-	border-left: 2px solid #555;
-	margin-top: 10px;
+.tag-text {
+	font-size: 14px;
 }
 
-.nested-header {
+.sort-info {
 	display: flex;
 	justify-content: space-between;
-	margin-bottom: 5px;
-	font-size: 16px;
+	align-items: center;
 }
 
-.nested-author {
-	color: #ccc;
-	font-size: 16px;
+.results-info {
+	display: flex;
+	flex-direction: column;
 }
 
-.nested-date {
-	color: #999;
-	font-size: 16px;
+.total-count {
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
 }
 
-.nested-content {
-	color: #bbb;
-	font-size: 16px;
-	line-height: 1.4;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
+.filter-info {
+	color: #007acc;
+	font-size: 12px;
+	font-weight: normal;
+}
+
+.sort-controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.sort-controls label {
+	color: #fff;
+	font-size: 14px;
+}
+
+.sort-controls select {
+	background-color: #333;
+	color: #fff;
+	border: 1px solid #555;
+	padding: 5px 10px;
+	border-radius: 4px;
+	font-family: inherit;
 }
 
 /* 回覆功能樣式 */
@@ -1455,14 +1577,21 @@ export default {
 
 /* 響應式設計 */
 @media (max-width: 768px) {
+	.main-layout {
+		grid-template-columns: 1fr;
+		grid-template-rows: 1fr auto auto;
+		grid-template-areas: 
+			"content"
+			"sidebar"
+			"tags";
+	}
+	
 	.reviews-container {
 		padding: 10px;
 	}
 	
-	.main-card {
-		padding: 20px;
-		min-height: auto;
-		height: auto;
+	.main-content, .comments-sidebar {
+		padding: 15px;
 	}
 	
 	.nav-arrow {
@@ -1477,16 +1606,6 @@ export default {
 	
 	.nav-right {
 		right: -20px;
-	}
-	
-	.top-section {
-		flex-direction: column;
-		gap: 15px;
-		align-items: flex-start;
-	}
-
-	.review-list {
-		margin-bottom: 30px;
 	}
 }
 
