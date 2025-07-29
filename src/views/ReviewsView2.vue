@@ -4,30 +4,35 @@
 		<div v-if="loading" class="loading-container">
 			<div class="loading-text">Loading reviews...</div>
 		</div>
-		
+
 		<!-- 錯誤狀態 -->
 		<div v-else-if="error" class="error-container">
 			<div class="error-text">{{ error }}</div>
 			<button @click="fetchReviews" class="retry-btn">Retry</button>
 		</div>
-		
+
 		<!-- 主要內容 -->
 		<div v-else-if="reviews.length > 0" class="main-layout">
 			<!-- 左側主要評論區域 -->
 			<div class="main-content">
-				<!-- 標題 -->
-				<h1 class="main-title">{{ currentReview.title || 'Title' }}</h1>
-				
+
 				<!-- 標籤顯示 -->
 				<div class="tags-display">
-					<span 
-						v-for="tag in currentReview.tags" 
-						:key="tag" 
-						class="tag-item"
-						:class="{ active: selectedTags.includes(tag) }"
-					>
+					<span v-for="tag in currentReview.tags" :key="tag" class="tag-item"
+						:class="{ active: selectedTags.includes(tag) }">
 						#{{ tag }}
 					</span>
+				</div>
+
+				<!-- 標題 -->
+				<h1 class="main-title">{{ currentReview.title || 'Title' }}</h1>
+
+				<!-- 評分 -->
+				<div class="rating-section">
+					<div class="stars">
+						<span v-for="n in 5" :key="n" class="star"
+							:class="{ filled: n <= currentReview.rating }">★</span>
+					</div>
 				</div>
 
 				<!-- 評論內容 -->
@@ -35,12 +40,7 @@
 					<p>{{ currentReview.content }}</p>
 				</div>
 
-				<!-- 評分 -->
-				<div class="rating-section">
-					<div class="stars">
-						<span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= currentReview.rating }">★</span>
-					</div>
-				</div>
+
 
 				<!-- 作者和日期 -->
 				<div class="author-section">
@@ -61,54 +61,40 @@
 
 			<!-- 右側評論列表 -->
 			<div class="comments-sidebar">
-				<!-- 回覆主評論的表單 -->
-				<div v-if="showReplyForm && isLoggedIn" class="reply-form">
-					<h4>Reply to this review</h4>
-					<textarea 
-						v-model="commentContent" 
-						placeholder="Write your comment..."
-						class="reply-textarea"
-						:disabled="submittingReply"
-					></textarea>
-					<div class="form-buttons">
-						<button @click="submitComment" :disabled="!commentContent.trim() || submittingReply" class="submit-btn">
-							{{ submittingReply ? 'Posting...' : 'Post Comment' }}
-						</button>
-						<button @click="cancelReply" class="cancel-btn">Cancel</button>
-					</div>
-				</div>
-
 				<!-- 評論回覆區域 -->
-				<div v-if="currentReview.comments && currentReview.comments.length > 0">
+				<div v-if="currentReview.comments && currentReview.comments.length > 0" class="comments-container">
 					<div v-for="comment in currentReview.comments" :key="comment.id" class="comment-item">
 						<div class="comment-header">
 							<span class="comment-name">{{ comment.author }}</span>
+							<span class="comment-date">{{ comment.date }}</span>
 						</div>
 						<div class="comment-text">{{ comment.content }}</div>
-						
-						<!-- 回覆按鈕 (只有登入用戶可見) -->
-						<div v-if="isLoggedIn" class="comment-actions">
+
+						<!-- 回覆按鈕 (只有登入用戶可見且回覆表單未顯示) -->
+						<div v-if="isLoggedIn && showCommentReply !== comment.id" class="comment-actions">
 							<button @click="toggleCommentReply(comment.id)" class="reply-arrow">
-								{{ showCommentReply === comment.id ? '✕' : '←' }}
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" viewBox="0 0 24 20"
+									fill="none">
+									<path
+										d="M1.00029 12.0479L0.645204 11.6959L0.296222 12.048L0.645223 12.4L1.00029 12.0479ZM23.4045 0.999988C23.4045 0.723845 23.1806 0.499994 22.9045 0.500001C22.6284 0.500008 22.4045 0.723872 22.4045 1.00001L23.4045 0.999988ZM7.84527 5.14316L7.49018 4.79115L0.645204 11.6959L1.00029 12.0479L1.35538 12.4L8.20036 5.49517L7.84527 5.14316ZM1.00029 12.0479L0.645223 12.4L7.49057 19.3044L7.84564 18.9524L8.20071 18.6003L1.35536 11.6959L1.00029 12.0479ZM1.00029 12.0479L1.00031 12.5479L16.9048 12.5475L16.9048 12.0475L16.9048 11.5475L1.00028 11.5479L1.00029 12.0479ZM22.9046 6.04736L23.4046 6.04735L23.4045 0.999988L22.9045 1L22.4045 1.00001L22.4046 6.04738L22.9046 6.04736ZM16.9048 12.0475L16.9048 12.5475C20.4947 12.5474 23.4047 9.6372 23.4046 6.04735L22.9046 6.04736L22.4046 6.04738C22.4047 9.08494 19.9424 11.5474 16.9048 11.5475L16.9048 12.0475Z"
+										fill="white" />
+								</svg>
 							</button>
 						</div>
-						
+
 						<!-- 回覆評論表單 -->
 						<div v-if="showCommentReply === comment.id && isLoggedIn" class="reply-form small">
-							<textarea 
-								v-model="replyContent" 
-								placeholder="Write your reply..."
-								class="reply-textarea"
-								:disabled="submittingReply"
-							></textarea>
+							<textarea v-model="replyContent" placeholder="Write your reply..." class="reply-textarea"
+								:disabled="submittingReply"></textarea>
 							<div class="form-buttons">
-								<button @click="submitReply(comment.id)" :disabled="!replyContent.trim() || submittingReply" class="submit-btn">
+								<button @click="submitReply(comment.id)"
+									:disabled="!replyContent.trim() || submittingReply" class="submit-btn">
 									{{ submittingReply ? 'Posting...' : 'Post Reply' }}
 								</button>
 								<button @click="cancelCommentReply" class="cancel-btn">Cancel</button>
 							</div>
 						</div>
-						
+
 						<!-- 顯示回覆 -->
 						<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
 							<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
@@ -121,73 +107,63 @@
 						</div>
 					</div>
 				</div>
-				
-				<!-- 如果沒有評論，顯示預設的評論項目 -->
-				<div v-else-if="!showReplyForm">
-					<div class="comment-item" v-for="n in 3" :key="'default-' + n">
-						<div class="comment-header">
-							<span class="comment-name">Name</span>
-						</div>
-						<div class="comment-text">
-							contentscontentscontentscontentscontentscontentscontentscontentscontentscontentscontentscontentscontents
-						</div>
-						<button class="reply-arrow">←</button>
+
+				<!-- 如果沒有評論，顯示無評論提示 -->
+				<div v-else-if="!showReplyForm" class="no-comments">
+					<p>No comments yet</p>
+				</div>
+
+				<!-- 新增評論按鈕 -->
+				<button class="add-comment-btn" @click="toggleReplyForm" v-if="isLoggedIn && !showReplyForm">
+					<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" fill="none">
+						<path
+							d="M9.625 6.125H35.375C37.308 6.125 38.875 7.692 38.875 9.625V35.375C38.875 37.308 37.308 38.875 35.375 38.875H9.625C7.692 38.875 6.125 37.308 6.125 35.375V9.625C6.125 7.692 7.692 6.125 9.625 6.125Z"
+							stroke="white" />
+						<path d="M22.5 15L22.5 30" stroke="white" stroke-linejoin="round" />
+						<path d="M30 22.5L15 22.5" stroke="white" stroke-linejoin="round" />
+					</svg>
+				</button>
+
+				<!-- 新增評論表單 (在按鈕下方顯示) -->
+				<div v-if="showReplyForm && isLoggedIn" class="reply-form">
+					<h4>Reply to this review</h4>
+					<textarea v-model="commentContent" placeholder="Write your comment..." class="reply-textarea"
+						:disabled="submittingReply"></textarea>
+					<div class="form-buttons">
+						<button @click="submitComment" :disabled="!commentContent.trim() || submittingReply"
+							class="submit-btn">
+							{{ submittingReply ? 'Posting...' : 'Post Comment' }}
+						</button>
+						<button @click="cancelReply" class="cancel-btn">Cancel</button>
 					</div>
 				</div>
-				
-				<!-- 新增評論按鈕 -->
-				<button class="add-comment-btn" @click="toggleReplyForm" v-if="isLoggedIn">
-					{{ showReplyForm ? '✕' : '＋' }}
-				</button>
-				
-				<!-- 新增 Review 按鈕 -->
-				<button class="add-review-btn" @click="toggleReviewForm" v-if="isLoggedIn">
-					{{ showReviewForm ? '✕' : 'Add Review' }}
-				</button>
-				
+
+
+
 				<!-- 新增 Review 表單 -->
 				<div v-if="showReviewForm && isLoggedIn" class="add-review-form">
 					<h4>Add New Review</h4>
 					<div class="form-group">
 						<label>Subject:</label>
-						<input 
-							v-model="newReview.subject" 
-							type="text" 
-							placeholder="Enter review subject..."
-							class="review-input"
-							:disabled="submittingReview"
-						/>
+						<input v-model="newReview.subject" type="text" placeholder="Enter review subject..."
+							class="review-input" :disabled="submittingReview" />
 					</div>
 					<div class="form-group">
 						<label>Rating:</label>
 						<div class="rating-input">
-							<span 
-								v-for="n in 5" 
-								:key="n" 
-								class="star-input" 
-								:class="{ active: n <= newReview.rate }"
-								@click="setRating(n)"
-							>★</span>
+							<span v-for="n in 5" :key="n" class="star-input" :class="{ active: n <= newReview.rate }"
+								@click="setRating(n)">★</span>
 						</div>
 					</div>
 					<div class="form-group">
 						<label>Content:</label>
-						<textarea 
-							v-model="newReview.content" 
-							placeholder="Write your review..."
-							class="review-textarea"
-							:disabled="submittingReview"
-						></textarea>
+						<textarea v-model="newReview.content" placeholder="Write your review..." class="review-textarea"
+							:disabled="submittingReview"></textarea>
 					</div>
 					<div class="form-group">
 						<label>Tags (comma separated):</label>
-						<input 
-							v-model="newReview.tagsInput" 
-							type="text" 
-							placeholder="e.g. 電影, 科幻, 哲學"
-							class="review-input"
-							:disabled="submittingReview"
-						/>
+						<input v-model="newReview.tagsInput" type="text" placeholder="e.g. 電影, 科幻, 哲學"
+							class="review-input" :disabled="submittingReview" />
 					</div>
 					<div class="form-buttons">
 						<button @click="submitReview" :disabled="!isValidReview || submittingReview" class="submit-btn">
@@ -196,64 +172,61 @@
 						<button @click="cancelReviewForm" class="cancel-btn">Cancel</button>
 					</div>
 				</div>
-				
+
 				<!-- 如果未登入，顯示登入提示 -->
-				<div v-else class="login-prompt">
+				<div v-if="!isLoggedIn" class="login-prompt">
 					<p>Login to add comments and reviews</p>
 				</div>
 			</div>
 
 			<!-- 底部標籤選擇區域 -->
 			<div class="bottom-tags">
-				<!-- Tags 功能區域 -->
-				<div class="tags-header-info">
-					<span class="selected-count" v-if="selectedTags.length > 0">
-						select {{ selectedTags.length }} tags
-					</span>
-					<button 
-						v-if="selectedTags.length > 0" 
-						@click="clearAllTags"
-						class="clear-tags-btn"
-					>
-						清除所有
-					</button>
-				</div>
-				
+
 				<!-- 標籤列表 -->
 				<div class="tags-container">
-					<div 
-						v-for="tag in tags" 
-						:key="tag"
-						class="tag-selector"
-						:class="{ active: selectedTags.includes(tag) }"
-						@click="toggleTag(tag)"
-					>
+					<div v-for="tag in tags" :key="tag" class="tag-selector"
+						:class="{ active: selectedTags.includes(tag) }" @click="toggleTag(tag)">
 						<span class="tag-text">#{{ tag }}({{ getTagCount(tag) }})</span>
 					</div>
+
 				</div>
 
 				<!-- 排序和結果資訊 -->
 				<div class="sort-info">
 					<div class="results-info">
 						<span class="total-count">
-							Total: {{ filteredReviews.length }} reviews
-							<span v-if="selectedTags.length > 0" class="filter-info">
-								(filtered by {{ selectedTags.length }} tags)
-							</span>
+							{{ filteredReviews.length }} reviews
+
 						</span>
+
 					</div>
+
 					<div class="sort-controls">
-						<label>Sorted by</label>
+						<label>sorted by</label>
 						<select v-model="sortBy" @change="sortReviews">
 							<option value="date">Date</option>
 							<option value="title">Title</option>
 							<option value="rating">Rating</option>
 						</select>
+						<span v-if="selectedTags.length > 0" class="filter-info">
+							({{ selectedTags.length }} tags)
+						</span>
 					</div>
+					<button v-if="selectedTags.length > 0" @click="clearAllTags" class="clear-tags-btn">
+						clear all
+					</button>
+
+					<!-- 新增 Review 按鈕 -->
+					<button class="add-review-btn" @click="toggleReviewForm" v-if="isLoggedIn">
+						{{ showReviewForm ? '✕' : 'Add Review' }}
+					</button>
+
+
 				</div>
+
 			</div>
 		</div>
-		
+
 		<!-- 無資料狀態 -->
 		<div v-else class="empty-container">
 			<div class="empty-text">No reviews found</div>
@@ -309,36 +282,36 @@ export default {
 			if (this.selectedTags.length === 0) {
 				return this.allReviews
 			}
-			
+
 			// 篩選包含任意選中 tags 的評論（聯集）
 			const filtered = this.allReviews.filter(review => {
-				return this.selectedTags.some(tag => 
+				return this.selectedTags.some(tag =>
 					review.tags && review.tags.includes(tag)
 				)
 			})
-			
+
 			// 按照包含的選中 tags 數量排序，優先顯示包含更多選中 tags 的評論
 			return filtered.sort((a, b) => {
-				const aMatchCount = this.selectedTags.filter(tag => 
+				const aMatchCount = this.selectedTags.filter(tag =>
 					a.tags && a.tags.includes(tag)
 				).length
-				const bMatchCount = this.selectedTags.filter(tag => 
+				const bMatchCount = this.selectedTags.filter(tag =>
 					b.tags && b.tags.includes(tag)
 				).length
-				
+
 				// 先按匹配數量降序排序
 				if (aMatchCount !== bMatchCount) {
 					return bMatchCount - aMatchCount
 				}
-				
+
 				// 如果匹配數量相同，按日期降序排序
 				return new Date(b.date) - new Date(a.date)
 			})
 		},
 		isValidReview() {
-			return this.newReview.subject.trim() && 
-			       this.newReview.content.trim() && 
-			       this.newReview.rate > 0
+			return this.newReview.subject.trim() &&
+				this.newReview.content.trim() &&
+				this.newReview.rate > 0
 		}
 	},
 	watch: {
@@ -357,11 +330,11 @@ export default {
 		checkLoginStatus() {
 			const isLoggedIn = localStorage.getItem('isLoggedIn')
 			const userData = localStorage.getItem('currentUser')
-			
+
 			console.log('Checking login status:')
 			console.log('- isLoggedIn:', isLoggedIn)
 			console.log('- userData:', userData)
-			
+
 			if (isLoggedIn === 'true' && userData) {
 				try {
 					this.currentUser = JSON.parse(userData)
@@ -384,7 +357,7 @@ export default {
 			try {
 				this.loading = true
 				this.error = null
-				
+
 				const response = await reviewsService.getAllReviews()
 				if (response.success) {
 					this.allReviews = response.data
@@ -423,7 +396,7 @@ export default {
 
 		// 获取标签对应的评论数量
 		getTagCount(tag) {
-			return this.allReviews.filter(review => 
+			return this.allReviews.filter(review =>
 				review.tags && review.tags.includes(tag)
 			).length
 		},
@@ -456,17 +429,17 @@ export default {
 				this.currentIndex++
 			}
 		},
-		
+
 		previousReview() {
 			if (this.currentIndex > 0) {
 				this.currentIndex--
 			}
 		},
-		
+
 		selectReview(index) {
 			this.currentIndex = index
 		},
-		
+
 		sortReviews() {
 			switch (this.sortBy) {
 				case "date":
@@ -511,18 +484,18 @@ export default {
 				}
 
 				const response = await reviewsService.createComment(this.currentReview.id, commentData)
-				
+
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的評論
 					const reviewsResponse = await reviewsService.getAllReviews()
 					if (reviewsResponse.success) {
 						this.allReviews = reviewsResponse.data
 					}
-					
+
 					// 清空表單
 					this.commentContent = ''
 					this.showReplyForm = false
-					
+
 					// 顯示成功訊息
 					alert('Comment posted successfully!')
 				} else {
@@ -538,10 +511,8 @@ export default {
 
 		// 切換評論回覆表單
 		toggleCommentReply(commentId) {
-			if (this.showCommentReply === commentId) {
-				this.showCommentReply = null
-				this.replyContent = ''
-			} else {
+			// 只允許開啟回覆表單，不允許透過點擊按鈕關閉
+			if (this.showCommentReply !== commentId) {
 				this.showCommentReply = commentId
 				this.replyContent = ''
 			}
@@ -568,15 +539,15 @@ export default {
 				}
 
 				const response = await reviewsService.createComment(this.currentReview.id, replyData)
-				
+
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的回覆
 					await this.fetchReviews()
-					
+
 					// 清空表單
 					this.replyContent = ''
 					this.showCommentReply = null
-					
+
 					// 顯示成功訊息
 					alert('Reply posted successfully!')
 				} else {
@@ -622,15 +593,15 @@ export default {
 				}
 
 				const response = await reviewsService.createComment(reviewId, commentData)
-				
+
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的評論
 					await this.fetchReviews()
-					
+
 					// 清空表單
 					this.reviewReplyContent = ''
 					this.showReviewReply = null
-					
+
 					// 顯示成功訊息
 					alert('Reply posted successfully!')
 				} else {
@@ -676,15 +647,15 @@ export default {
 				}
 
 				const response = await reviewsService.createComment(reviewId, replyData)
-				
+
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的回覆
 					await this.fetchReviews()
-					
+
 					// 清空表單
 					this.commentReplyContent = ''
 					this.showCommentReplyInList = null
-					
+
 					// 顯示成功訊息
 					alert('Reply posted successfully!')
 				} else {
@@ -748,7 +719,7 @@ export default {
 
 			try {
 				this.submittingReview = true
-				
+
 				// 處理標籤
 				const tags = this.newReview.tagsInput
 					.split(',')
@@ -764,16 +735,16 @@ export default {
 				}
 
 				const response = await reviewsService.createReview(reviewData)
-				
+
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的評論
 					await this.fetchReviews()
 					await this.fetchTags()
-					
+
 					// 清空表單
 					this.resetReviewForm()
 					this.showReviewForm = false
-					
+
 					// 顯示成功訊息
 					alert('Review posted successfully!')
 				} else {
@@ -790,14 +761,14 @@ export default {
 	mounted() {
 		// 檢查登入狀態
 		this.checkLoginStatus()
-		
+
 		// 監聽 localStorage 變化（當用戶在其他頁面登入/登出時）
 		window.addEventListener('storage', this.handleStorageChange)
-		
+
 		// 初始化載入資料
 		this.fetchReviews()
 		this.fetchTags()
-		
+
 		// 支援鍵盤導航
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'ArrowLeft') {
@@ -816,237 +787,538 @@ export default {
 </script>
 
 <style scoped>
+/* ========================================
+   主要容器樣式 - 整個評論頁面的根容器
+   ======================================== */
 .reviews-container {
 	width: 100%;
-	min-height: 100vh;
+	/* 佔滿父容器的寬度 */
+	height: 100%;
+	/* 最小高度為視窗高度，確保內容不足時也能填滿螢幕 */
 	background-color: #000;
+	/* 黑色背景，營造暗色主題 */
 	color: #fff;
-	font-family: 'Courier New', monospace;
-	padding: 20px;
+	/* 白色文字，與黑色背景形成對比 */
+	font-family: "JetBrains Mono";
+	/* 使用等寬字體，營造程式碼風格 */
 	box-sizing: border-box;
+	/* 包含 padding 在總寬度內，避免溢出 */
 	display: flex;
+	/* 使用 Flexbox 布局 */
 	flex-direction: column;
+	/* 子元素垂直排列 */
+	color: #FFF;
 }
 
-/* 主要布局 */
+/* ========================================
+   主要網格布局 - 使用 CSS Grid 分割頁面區域
+   ======================================== */
 .main-layout {
 	display: grid;
-	grid-template-columns: 1fr 350px;
+	/* 使用 CSS Grid 布局系統 */
+	grid-template-columns: 1fr 40%;
+	/* 兩欄布局：左側自適應，右側固定 350px */
 	grid-template-rows: 1fr auto;
-	gap: 20px;
-	height: calc(100vh - 40px);
-	grid-template-areas: 
+	/* 兩列：上方自適應高度，下方根據內容調整 */
+	height: 100%;
+	/* 總高度為視窗高度減去容器 padding (20px * 2) */
+	grid-template-areas:
+		/* 定義網格區域名稱，方便管理布局 */
 		"content sidebar"
+		/* 第一列：左邊內容區，右邊側邊欄 */
 		"tags tags";
+	/* 第二列：標籤區域橫跨兩欄 */
 }
 
+/* ========================================
+   左側主要內容區域 - 顯示當前選中的評論詳情
+   ======================================== */
 .main-content {
 	grid-area: content;
+	/* 對應網格區域 "content" */
 	display: flex;
+	/* 使用 Flexbox 布局 */
 	flex-direction: column;
-	gap: 20px;
+	/* 子元素垂直排列 */
 	overflow-y: auto;
+	/* 內容溢出時顯示垂直捲軸 */
 	padding: 20px;
-	border: 1px solid #333;
+	/* 內部留白 20px */
 	position: relative;
-	max-height: calc(100vh - 200px);
+	/* 相對定位，為導航箭頭提供定位基準 */
+	max-height: 100vh;
+	justify-content: space-between;
+	/* 讓子元素分散排列，作者區域推到底部 */
+	/* 最大高度限制，避免內容過長 */
 }
 
+/* ========================================
+   右側評論側邊欄 - 顯示評論列表和互動功能
+   ======================================== */
 .comments-sidebar {
 	grid-area: sidebar;
+	/* 對應網格區域 "sidebar" */
 	display: flex;
+	/* 使用 Flexbox 布局 */
 	flex-direction: column;
+	/* 子元素垂直排列 */
 	gap: 15px;
+	/* 子元素間距 15px，比主內容區稍小 */
 	padding: 20px;
-	border: 1px solid #333;
+	/* 內部留白 20px */
 	overflow-y: auto;
+	/* 內容溢出時顯示垂直捲軸 */
+	overflow-x: hidden;
+	/* 隱藏水平溢出，防止新增評論內容橫向跑出 */
 	min-height: 0;
-	max-height: calc(100vh - 200px);
+	/* 允許彈性縮小，配合 overflow 使用 */
+	max-height: 100vh;
+	/* 與主內容區相同的高度限制 */
+	align-items: center;
+	/* 水平置中對齊所有子元素 */
+	width: 100%;
+	/* 使用完整寬度 */
+	box-sizing: border-box;
+	/* 包含 padding 在總寬度內 */
 }
 
+/* ========================================
+   底部標籤區域 - 橫跨整個頁面的標籤篩選功能
+   ======================================== */
 .bottom-tags {
 	grid-area: tags;
+	/* 對應網格區域 "tags" */
 	display: flex;
+	/* 使用 Flexbox 布局 */
 	flex-direction: column;
+	/* 子元素垂直排列 */
 	gap: 15px;
+	/* 子元素間距 15px */
 	padding: 15px;
-	border: 1px solid #333;
+	/* 內部留白 15px，比其他區域稍小 */
+	border-top: 1px solid #333;
+	/* 頂部邊框線，與上方內容分隔 */
+	/* 與其他區域相同的邊框樣式 */
 }
 
-/* 左側主要內容樣式 */
-.main-title {
-	font-size: 24px;
-	font-weight: bold;
-	margin: 0 0 15px 0;
-	color: #fff;
-}
-
+/* ========================================
+   左側主要內容樣式 - 評論詳情的各個組件
+   ======================================== */
+/* 標籤顯示容器 */
 .tags-display {
 	display: flex;
+	/* 使用 Flexbox 布局 */
 	gap: 10px;
+	/* 標籤間距 10px */
 	flex-wrap: wrap;
-	margin-bottom: 20px;
+	/* 標籤過多時自動換行 */
+	margin-bottom: 15%;
+	/* 底部留白，與下方內容分離 */
 }
 
+/* 評論標題 */
+.main-title {
+	font-size: 24px;
+	/* 較大的字體大小，突出標題重要性 */
+	text-align: center;
+	/* 文字水平置中對齊 */
+	color: #fff;
+	/* 純白色，最高對比度 */
+	margin: 0 auto;
+	/* 上下邊距為0，左右自動邊距實現容器置中 */
+}
+
+
+/* 個別標籤樣式 */
 .tag-item {
 	background-color: #333;
+	/* 深灰色背景，比主背景亮一些 */
 	color: #fff;
+	/* 白色文字 */
 	padding: 4px 8px;
+	/* 內部留白：上下 4px，左右 8px */
 	border-radius: 4px;
-	font-size: 12px;
+	/* 圓角 4px，柔化邊緣 */
+	font-size: 0.85rem;
+	/* 較小的字體，表示次要信息 */
 }
 
+/* 被選中的標籤樣式 */
 .tag-item.active {
 	background-color: #007acc;
+	/* 藍色背景，表示活躍/選中狀態 */
 }
 
+/* 評論內容段落 */
 .review-content {
-	flex: 1;
+	margin: 0;
+	/* 移除預設邊距，避免額外空白 */
+	word-break: break-word;
+	/* 長單詞自動換行，防止溢出 */
+	padding: 0 20%;
+	/* 左右內邊距 50px，讓文字在中間區域顯示 */
+	text-align: justify;
+	/* 文字兩端對齊，讓段落更整齊 */
 	line-height: 1.6;
-	margin-bottom: 20px;
+	/* 增加行高，提高可讀性 */
 }
 
+/* 評論內容段落 */
 .review-content p {
 	margin: 0;
+	/* 移除預設邊距，避免額外空白 */
 	word-break: break-word;
+	color: #fff;
+	font-size: 1rem;
 }
 
+/* ========================================
+   評分系統樣式
+   ======================================== */
+
+/* 評分區域容器 */
 .rating-section {
-	margin-bottom: 20px;
+	margin-bottom: 30px;
+	/* 底部留白，與下方內容分離 */
 }
 
+/* 星星容器 */
 .stars {
 	display: flex;
+	/* 使用 Flexbox 水平排列星星 */
+	justify-content: center;
+	/* 水平置中對齊 */
 	gap: 2px;
+	/* 星星間距 2px，緊密排列 */
 }
 
+/* 單個星星樣式 - 未填充狀態 */
 .star {
-	color: #444;
+	color: #000000;
+	/* 深灰色，表示未評分的星星 */
 	font-size: 20px;
+	/* 適中的大小，清晰可見 */
 }
 
+/* 單個星星樣式 - 填充狀態 */
 .star.filled {
-	color: #ffd700;
+	color: #ffffff;
+	/* 金黃色，表示已評分的星星 */
 }
 
+/* ========================================
+   作者信息區域樣式
+   ======================================== */
+
+/* 作者信息區域樣式 */
 .author-section {
-	border-top: 1px solid #333;
-	padding-top: 15px;
-	margin-bottom: 15px;
+	/* border-top: 1px solid #333; */
+	/*頂部邊框，與上方內容分隔 */
+	margin-top: 5%;
+	/* 自動頂部邊距，將元素推到底部 */
+	margin-bottom: auto;
+	/* 底部留白，與下方內容分離 */
+	padding: 0 20%;
+	/* 左右內邊距 50px，讓文字在中間區域顯示 */
 }
 
 .author-info {
 	display: flex;
-	justify-content: space-between;
+	justify-content: center;
+	/* 置中對齊作者與日期 */
 	align-items: center;
+	gap: 10px;
+	padding-left: 0;
 }
 
+/* 作者姓名 */
 .author-name {
-	font-weight: bold;
 	color: #fff;
+	/* 純白色，高對比度 */
+	font-size: 1rem;
+	/* 字體大小調整為 20px */
 }
 
+/* 評論日期 */
 .review-date {
 	color: #ccc;
+	/* 淺灰色，表示次要信息 */
+	font-size: 1rem;
+	/* 字體大小調整為 20px */
 }
 
-/* Navigation Arrows */
+/* ========================================
+   導航箭頭樣式 - 用於切換評論的左右箭頭
+   ======================================== */
+
+/* 導航箭頭基本樣式 */
 .nav-arrow {
 	position: absolute;
+	/* 絕對定位，相對於 main-content */
 	top: 50%;
+	/* 垂直置中 */
 	transform: translateY(-50%);
+	/* 精確的垂直置中對齊 */
 	background-color: rgba(255, 255, 255, 0.1);
+	/* 半透明白色背景 */
 	border: none;
+	/* 移除預設邊框 */
 	color: #fff;
+	/* 白色文字/圖標 */
 	font-size: 16px;
+	/* 箭頭大小 */
 	width: 50px;
+	/* 圓形按鈕寬度 */
 	height: 50px;
+	/* 圓形按鈕高度 */
 	border-radius: 50%;
+	/* 圓形按鈕 */
 	cursor: pointer;
+	/* 手形游標，表示可點擊 */
 	transition: all 0.3s;
+	/* 所有屬性的平滑過渡動畫 */
 	backdrop-filter: blur(10px);
+	/* 背景模糊效果，現代毛玻璃風格 */
 }
 
+/* 導航箭頭懸停效果 - 僅在非禁用狀態下生效 */
 .nav-arrow:hover:not(:disabled) {
 	background-color: rgba(255, 255, 255, 0.2);
+	/* 懸停時背景更亮 */
 	transform: translateY(-50%) scale(1.1);
+	/* 懸停時稍微放大 */
 }
 
+/* 導航箭頭禁用狀態 - 當無法繼續導航時 */
 .nav-arrow:disabled {
 	opacity: 0.3;
+	/* 降低透明度，表示禁用 */
 	cursor: not-allowed;
+	/* 禁止游標，表示不可點擊 */
 }
 
+/* 左側導航箭頭位置 */
 .nav-left {
 	left: -25px;
+	/* 位於容器左側外 25px */
 }
 
+/* 右側導航箭頭位置 */
 .nav-right {
 	right: -25px;
+	/* 位於容器右側外 25px */
 }
 
-/* 右側評論區域 */
+/* ========================================
+   右側評論區域樣式 - 評論列表和互動功能
+   ======================================== */
+
+/* 評論容器 - 包含所有評論的外層容器 */
+.comments-container {
+	width: 100%;
+	/* 使用完整寬度 */
+	max-width: 100%;
+	/* 強制限制最大寬度，確保與新增評論格式一致 */
+	box-sizing: border-box;
+	/* 包含任何 padding 在寬度計算內 */
+	overflow: hidden;
+	/* 隱藏任何溢出內容，與新增評論保持一致 */
+	display: flex;
+	/* 使用 Flexbox 布局 */
+	flex-direction: column;
+	/* 垂直排列評論項目 */
+	gap: 0;
+	/* 移除間距，讓評論項目緊密排列 */
+}
+
+/* 單個評論項目 */
 .comment-item {
-	background-color: #111;
+	/* background-color: #111; */
+	/* 深色背景，比主背景稍亮 */
 	border-radius: 8px;
-	padding: 15px;
+	/* 圓角 8px，柔化邊緣 */
+	padding: 15px 20px;
+	/* 上下15px，左右20px內邊距，避免內容貼邊 */
 	position: relative;
-	border: 1px solid #333;
+	/* 相對定位，為回覆箭頭提供基準 */
+	/* border: 1px solid #333; */
+	/* 邊框與其他元素保持一致 */
+	width: 100%;
+	/* 使用100%寬度，讓box-sizing處理padding */
+	max-width: 100%;
+	/* 強制限制最大寬度，防止任何內容溢出 */
+	align-self: stretch;
+	/* 確保評論項目在置中容器中仍然伸展 */
+	box-sizing: border-box;
+	/* 包含 padding 在總寬度內，這是關鍵！ */
+	overflow: hidden;
+	/* 隱藏任何溢出的內容，確保不會跑出邊界 */
+	word-wrap: break-word;
+	/* 強制長單詞換行，處理新增評論的長文字 */
 }
 
+/* 評論標題區域 */
 .comment-header {
+	display: flex;
+	/* 使用 Flexbox 布局 */
+	justify-content: space-between;
+	/* 兩端對齊：作者名稱在左，日期在右 */
 	margin-bottom: 8px;
+	/* 底部留白，與內容分離 */
+	font-size: 1rem;
 }
 
+/* 評論者姓名 */
 .comment-name {
-	font-weight: bold;
+	/* 粗體，突出評論者身份 */
 	color: #fff;
+	/* 純白色，高對比度 */
 }
 
+/* 評論日期 */
+.comment-date {
+	color: #ccc;
+	/* 淺灰色，表示次要信息 */
+	font-size: 14px;
+	/* 略小的字體 */
+}
+
+/* 評論文字內容 */
 .comment-text {
 	color: #ccc;
-	line-height: 1.4;
+	/* 淺灰色，表示內容文字 */
+	line-height: 1.3;
+	/* 適當的行高，提高可讀性 */
 	word-break: break-word;
+	/* 長單詞自動換行 */
+	font-size: 1rem;
+	width: 100%;
+	/* 確保文字內容不超出容器 */
+	max-width: 100%;
+	/* 強制限制最大寬度，防止溢出 */
+	overflow-wrap: break-word;
+	/* 強制長單詞換行 */
+	white-space: pre-wrap;
+	/* 保留空白但允許換行 */
+	box-sizing: border-box;
+	/* 包含任何 padding 在寬度計算內 */
 }
 
+/* 評論操作區域 */
+.comment-actions {
+	margin-top: 8px;
+	/* 頂部留白，與內容分離 */
+	display: flex;
+	/* 使用 Flexbox 布局 */
+	justify-content: flex-end;
+	/* 回覆按鈕靠右對齊 */
+}
+
+/* 回覆箭頭按鈕 */
 .reply-arrow {
-	position: absolute;
-	bottom: 10px;
-	right: 10px;
 	background: none;
+	/* 無背景，保持簡潔 */
 	border: none;
+	/* 無邊框 */
 	color: #007acc;
-	font-size: 16px;
+	/* 藍色，表示互動元素 */
 	cursor: pointer;
+	/* 手形游標 */
+	width: 16px;
+	/* 設定按鈕寬度，縮小4px */
+	height: 12px;
+	/* 設定按鈕高度，縮小4px */
+	display: flex;
+	/* 使用 Flexbox 置中 */
+	align-items: center;
+	/* 垂直置中 */
+	justify-content: center;
+	/* 水平置中 */
+	transform: rotate(0deg);
+	/* 旋轉0度，取消旋轉 */
+	flex-shrink: 0;
+	/* 防止縮小 */
 }
 
+.reply-arrow svg {
+	width: 100%;
+	/* SVG 填滿按鈕 */
+	height: 100%;
+	/* SVG 填滿按鈕 */
+	stroke-width: 1px;
+	/* 設定線條寬度 */
+	stroke: #FFF;
+	/* 設定線條顏色 */
+}
+
+
+/* 新增評論按鈕 */
 .add-comment-btn {
-	background-color: #333;
-	border: 1px solid #555;
+	background: transparent;
+	/* 透明背景，移除按鈕外框 */
+	border: none;
+	/* 移除邊框 */
 	color: #fff;
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-	font-size: 20px;
+	/* 白色文字/圖標 */
+	width: 45px;
+	/* 按鈕寬度，與 SVG 相同 */
+	height: 45px;
+	/* 按鈕高度，與 SVG 相同 */
 	cursor: pointer;
-	transition: background-color 0.3s;
+	/* 手形游標 */
+	display: flex;
+	/* 使用 Flexbox 布局 */
+	align-items: center;
+	/* 垂直置中對齊 */
+	justify-content: center;
+	/* 水平置中對齊 */
+	transition: all 0.2s;
+	/* 平滑過渡動畫 */
+	padding: 0;
+	/* 移除內邊距 */
+}
+
+.add-comment-btn svg {
+	width: 45px;
+	/* SVG 寬度 */
+	height: 45px;
+	/* SVG 高度 */
+	flex-shrink: 0;
+	/* 防止縮小 */
+}
+
+.add-comment-btn span {
+	font-size: 24px;
+	/* 關閉符號的字體大小 */
+	color: #fff;
+	/* 確保叉叉是白色 */
+	font-weight: bold;
+	/* 加粗叉叉 */
 }
 
 .add-comment-btn:hover {
-	background-color: #444;
+	opacity: 0.8;
+	/* 懸停時降低透明度，提供視覺回饋 */
+	transform: scale(1.05);
+	/* 懸停時輕微放大 */
 }
 
 .add-review-btn {
-	background-color: #007acc;
-	border: 1px solid #0056b3;
-	color: #fff;
-	padding: 12px 20px;
-	border-radius: 6px;
-	font-size: 14px;
-	cursor: pointer;
-	transition: background-color 0.3s;
-	margin-top: 10px;
-	width: 100%;
+    background-color: #007acc;
+    border: 1px solid #0056b3;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+    width: 200px;
+    /* 固定寬度，避免過寬 */
+    align-self: flex-end;
+    /* 靠右對齊 */
+    margin-left: auto;
+    /* 讓按鈕推到容器最右側 */
 }
 
 .add-review-btn:hover {
@@ -1060,6 +1332,10 @@ export default {
 	border-radius: 8px;
 	border: 1px solid #333;
 	position: relative;
+	width: 100%;
+	/* 確保表單佔滿寬度 */
+	align-self: stretch;
+	/* 確保表單在置中容器中仍然伸展 */
 }
 
 .add-review-form h4 {
@@ -1158,16 +1434,15 @@ export default {
 	margin: 0;
 }
 
-/* 底部標籤區域 */
-.tags-header-info {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 10px;
+.no-comments {
+	text-align: center;
+	padding: 20px;
+	color: #ccc;
+	font-style: italic;
 }
 
-.selected-count {
-	color: #007acc;
+.no-comments p {
+	margin: 0;
 	font-size: 14px;
 }
 
@@ -1191,37 +1466,45 @@ export default {
 	gap: 10px;
 	align-items: center;
 	flex-wrap: wrap;
-	margin-bottom: 15px;
 }
 
 .tag-selector {
-	background-color: #222;
-	border: 1px solid #444;
+	background-color: #333;
+	/* 深灰色背景，比主背景亮一些 */
 	color: #fff;
-	padding: 8px 12px;
-	border-radius: 6px;
+	/* 白色文字 */
+	padding: 4px 8px;
+	/* 內部留白：上下 4px，左右 8px */
+	border-radius: 4px;
+	/* 圓角 4px，柔化邊緣 */
+	font-size: 0.85rem;
+	/* 較小的字體，表示次要信息 */
 	cursor: pointer;
 	transition: all 0.3s;
 	white-space: nowrap;
 }
 
 .tag-selector:hover {
-	background-color: #333;
+	background-color: #444;
 }
 
 .tag-selector.active {
 	background-color: #007acc;
-	border-color: #0056b3;
+	/* 藍色背景，表示活躍/選中狀態 */
+	color: #fff;
+	/* 白色文字 */
 }
 
 .tag-text {
-	font-size: 14px;
+	font-size: 0.85rem;
 }
 
 .sort-info {
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-start;
+	/* 靠左對齊所有內容 */
 	align-items: center;
+	gap: 10px;
 }
 
 .results-info {
@@ -1231,13 +1514,12 @@ export default {
 
 .total-count {
 	color: #fff;
-	font-size: 14px;
-	font-weight: bold;
+	font-size: 1rem;
 }
 
 .filter-info {
-	color: #007acc;
-	font-size: 12px;
+	color: #ffffff;
+	font-size: 1rem;
 	font-weight: normal;
 }
 
@@ -1249,7 +1531,7 @@ export default {
 
 .sort-controls label {
 	color: #fff;
-	font-size: 14px;
+	font-size: 1rem;
 }
 
 .sort-controls select {
@@ -1300,6 +1582,10 @@ export default {
 	background-color: #2a2a2a;
 	border-radius: 8px;
 	border: 1px solid #444;
+	width: 100%;
+	/* 確保表單佔滿寬度 */
+	align-self: stretch;
+	/* 確保表單在置中容器中仍然伸展 */
 }
 
 .reply-form.small {
@@ -1389,7 +1675,7 @@ export default {
 .comments-section {
 	margin-top: 30px;
 	padding-top: 20px;
-	border-top: 1px solid #444;
+	/* border-top: 1px solid #444; */
 }
 
 .comments-section h3 {
@@ -1403,7 +1689,7 @@ export default {
 	padding: 15px;
 	background-color: #2a2a2a;
 	border-radius: 8px;
-	border: 1px solid #444;
+	/* border: 1px solid #444; */
 }
 
 .comment-header {
@@ -1438,15 +1724,13 @@ export default {
 
 .replies-section {
 	margin-top: 15px;
-	padding-left: 20px;
 	border-left: 2px solid #555;
 }
 
 .reply-item {
-	margin-bottom: 15px;
-	padding: 10px;
-	background-color: #222;
-	border-radius: 6px;
+	margin-bottom: 20px;
+	padding-left: 10px;
+
 }
 
 .reply-header {
@@ -1458,18 +1742,18 @@ export default {
 .reply-author {
 	font-weight: bold;
 	color: #ccc;
-	font-size: 13px;
+	font-size: 1rem;
 }
 
 .reply-date {
 	color: #999;
-	font-size: 13px;
+	font-size: 0.8rem;
 }
 
 .reply-content {
 	color: #bbb;
 	line-height: 1.4;
-	font-size: 14px;
+	font-size: 1rem;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 }
@@ -1486,131 +1770,50 @@ export default {
 	padding: 8px;
 }
 
-.review-comments {
-	margin-top: 15px;
-	padding: 10px;
-	background-color: #1a1a1a;
-	border-radius: 6px;
-	border: 1px solid #333;
-}
 
-.review-comment-item {
-	margin-bottom: 12px;
-	padding: 8px;
-	background-color: #252525;
-	border-radius: 4px;
-	border: 1px solid #333;
-}
-
-.review-comment-item:last-child {
-	margin-bottom: 0;
-}
-
-.review-comment-item .comment-header {
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 6px;
-}
-
-.review-comment-item .comment-author {
-	font-weight: bold;
-	color: #ddd;
-	font-size: 12px;
-}
-
-.review-comment-item .comment-date {
-	color: #aaa;
-	font-size: 12px;
-}
-
-.review-comment-item .comment-content {
-	color: #ccc;
-	line-height: 1.3;
-	margin-bottom: 8px;
-	font-size: 13px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-}
-
-.review-comment-item .comment-actions {
-	display: flex;
-	gap: 5px;
-}
-
-.review-comment-item .replies-section {
-	margin-top: 10px;
-	padding-left: 15px;
-	border-left: 2px solid #444;
-}
-
-.review-comment-item .reply-item {
-	margin-bottom: 8px;
-	padding: 6px;
-	background-color: #1f1f1f;
-	border-radius: 3px;
-}
-
-.review-comment-item .reply-header {
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 4px;
-}
-
-.review-comment-item .reply-author {
-	font-weight: bold;
-	color: #bbb;
-	font-size: 11px;
-}
-
-.review-comment-item .reply-date {
-	color: #888;
-	font-size: 11px;
-}
-
-.review-comment-item .reply-content {
-	color: #aaa;
-	line-height: 1.3;
-	font-size: 12px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-}
 
 /* 響應式設計 */
 @media (max-width: 768px) {
 	.main-layout {
 		grid-template-columns: 1fr;
-		grid-template-rows: 1fr auto auto;
-		grid-template-areas: 
+		grid-template-rows: auto auto auto;
+		grid-template-areas:
+			"tags"
 			"content"
-			"sidebar"
-			"tags";
+			"sidebar";
 	}
-	
+
+	.main-content,
+	.comments-sidebar,
+	.bottom-tags {
+		min-width: 0;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
 	.reviews-container {
 		padding: 10px;
 	}
-	
-	.main-content, .comments-sidebar {
-		padding: 15px;
-	}
-	
+
 	.nav-arrow {
 		width: 40px;
 		height: 40px;
 		font-size: 16px;
 	}
-	
+
 	.nav-left {
 		left: -20px;
 	}
-	
+
 	.nav-right {
 		right: -20px;
 	}
 }
 
 /* 載入和錯誤狀態樣式 */
-.loading-container, .error-container, .empty-container {
+.loading-container,
+.error-container,
+.empty-container {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -1619,7 +1822,9 @@ export default {
 	text-align: center;
 }
 
-.loading-text, .error-text, .empty-text {
+.loading-text,
+.error-text,
+.empty-text {
 	font-size: 18px;
 	color: #ccc;
 	margin-bottom: 20px;
