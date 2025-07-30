@@ -66,7 +66,7 @@
 					<div v-for="comment in currentReview.comments" :key="comment.id" class="comment-item">
 						<div class="comment-header">
 							<span class="comment-name">{{ comment.author }}</span>
-							<span class="comment-date">{{ comment.date }}</span>
+							<!-- <span class="comment-date">{{ comment.date }}</span> -->
 						</div>
 						<div class="comment-text">{{ comment.content }}</div>
 
@@ -87,11 +87,26 @@
 							<textarea v-model="replyContent" placeholder="Write your reply..." class="reply-textarea"
 								:disabled="submittingReply"></textarea>
 							<div class="form-buttons">
-								<button @click="submitReply(comment.id)"
-									:disabled="!replyContent.trim() || submittingReply" class="submit-btn">
-									{{ submittingReply ? 'Posting...' : 'Post Reply' }}
+								<button @click="cancelCommentReply" class="cancel-btn" aria-label="Cancel">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+										fill="none">
+										<path
+											d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
+											stroke="white" stroke-linecap="round" />
+										<path d="M9 9L15 15" stroke="white" stroke-linecap="round" />
+										<path d="M15 9L9 15" stroke="white" stroke-linecap="round" />
+									</svg>
 								</button>
-								<button @click="cancelCommentReply" class="cancel-btn">Cancel</button>
+								<button @click="submitReply(comment.id)"
+									:disabled="!replyContent.trim() || submittingReply" class="submit-btn"
+									aria-label="Submit">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+										fill="none">
+										<path
+											d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
+											stroke="white" />
+									</svg>
+								</button>
 							</div>
 						</div>
 
@@ -100,7 +115,7 @@
 							<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
 								<div class="reply-header">
 									<span class="reply-author">{{ reply.author }}</span>
-									<span class="reply-date">{{ reply.date }}</span>
+									<!-- <span class="reply-date">{{ reply.date }}</span> -->
 								</div>
 								<div class="reply-content">{{ reply.content }}</div>
 							</div>
@@ -130,11 +145,25 @@
 					<textarea v-model="commentContent" placeholder="Write your comment..." class="reply-textarea"
 						:disabled="submittingReply"></textarea>
 					<div class="form-buttons">
-						<button @click="submitComment" :disabled="!commentContent.trim() || submittingReply"
-							class="submit-btn">
-							{{ submittingReply ? 'Posting...' : 'Post Comment' }}
+						<button @click="cancelReply" class="cancel-btn" aria-label="Cancel">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none">
+								<path
+									d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
+									stroke="white" stroke-linecap="round" />
+								<path d="M9 9L15 15" stroke="white" stroke-linecap="round" />
+								<path d="M15 9L9 15" stroke="white" stroke-linecap="round" />
+							</svg>
 						</button>
-						<button @click="cancelReply" class="cancel-btn">Cancel</button>
+						<button @click="submitComment" :disabled="!commentContent.trim() || submittingReply"
+							class="submit-btn" aria-label="Submit">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none">
+								<path
+									d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
+									stroke="white" />
+							</svg>
+						</button>
 					</div>
 				</div>
 
@@ -166,10 +195,25 @@
 							class="review-input" :disabled="submittingReview" />
 					</div>
 					<div class="form-buttons">
-						<button @click="submitReview" :disabled="!isValidReview || submittingReview" class="submit-btn">
-							{{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+						<button @click="cancelReviewForm" class="cancel-btn" aria-label="Cancel">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none">
+								<path
+									d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
+									stroke="white" stroke-linecap="round" />
+								<path d="M9 9L15 15" stroke="white" stroke-linecap="round" />
+								<path d="M15 9L9 15" stroke="white" stroke-linecap="round" />
+							</svg>
 						</button>
-						<button @click="cancelReviewForm" class="cancel-btn">Cancel</button>
+						<button @click="submitReview" :disabled="!isValidReview || submittingReview" class="submit-btn"
+							aria-label="Submit">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none">
+								<path
+									d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
+									stroke="white" />
+							</svg>
+						</button>
 					</div>
 				</div>
 
@@ -1099,13 +1143,13 @@ export default {
 
 /* 左側導航箭頭位置 */
 .nav-left {
-	left: -25px;
+	left: 25px;
 	/* 位於容器左側外 25px */
 }
 
 /* 右側導航箭頭位置 */
 .nav-right {
-	right: -25px;
+	right: 25px;
 	/* 位於容器右側外 25px */
 }
 
@@ -1143,8 +1187,8 @@ export default {
 	/* 相對定位，為回覆箭頭提供基準 */
 	/* border: 1px solid #333; */
 	/* 邊框與其他元素保持一致 */
-	width: 100%;
-	/* 使用100%寬度，讓box-sizing處理padding */
+	/* width: 100%;
+	使用100%寬度，讓box-sizing處理padding */
 	max-width: 100%;
 	/* 強制限制最大寬度，防止任何內容溢出 */
 	align-self: stretch;
@@ -1304,21 +1348,21 @@ export default {
 }
 
 .add-review-btn {
-    background-color: #007acc;
-    border: 1px solid #0056b3;
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-    width: 200px;
-    /* 固定寬度，避免過寬 */
-    align-self: flex-end;
-    /* 靠右對齊 */
-    margin-left: auto;
-    /* 讓按鈕推到容器最右側 */
+	background-color: #007acc;
+	border: 1px solid #0056b3;
+	color: #fff;
+	padding: 12px 20px;
+	border-radius: 6px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+	margin-top: 10px;
+	width: 200px;
+	/* 固定寬度，避免過寬 */
+	align-self: flex-end;
+	/* 靠右對齊 */
+	margin-left: auto;
+	/* 讓按鈕推到容器最右側 */
 }
 
 .add-review-btn:hover {
@@ -1577,8 +1621,6 @@ export default {
 }
 
 .reply-form {
-	margin-top: 15px;
-	padding: 15px;
 	background-color: #2a2a2a;
 	border-radius: 8px;
 	border: 1px solid #444;
@@ -1689,24 +1731,24 @@ export default {
 	padding: 15px;
 	background-color: #2a2a2a;
 	border-radius: 8px;
-	/* border: 1px solid #444; */
 }
 
 .comment-header {
 	display: flex;
-	justify-content: space-between;
+	flex-direction: column;
+	align-items: flex-start;
 	margin-bottom: 10px;
 }
 
 .comment-author {
 	font-weight: bold;
 	color: #fff;
-	font-size: 14px;
+	font-size: 1rem;
+	line-height: 1.1;
 }
 
 .comment-date {
-	color: #ccc;
-	font-size: 14px;
+	display: none;
 }
 
 .comment-content {
@@ -1723,31 +1765,31 @@ export default {
 }
 
 .replies-section {
-	margin-top: 15px;
+	margin-top: 10px;
 	border-left: 2px solid #555;
 }
 
 .reply-item {
 	margin-bottom: 20px;
-	padding-left: 10px;
-
+	margin-left: 20px;
 }
 
 .reply-header {
 	display: flex;
-	justify-content: space-between;
+	flex-direction: column;
+	align-items: flex-start;
+	text-align: left;
 	margin-bottom: 8px;
 }
 
 .reply-author {
-	font-weight: bold;
-	color: #ccc;
+	color: #fff;
 	font-size: 1rem;
+	line-height: 1.1;
 }
 
 .reply-date {
-	color: #999;
-	font-size: 0.8rem;
+	display: none;
 }
 
 .reply-content {
