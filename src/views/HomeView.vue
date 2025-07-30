@@ -360,8 +360,8 @@ export default {
 }
 
 .dot {
-	width: 10px;
-	height: 10px;
+	width: 8px;
+	height: 8px;
 	border-radius: 50%;
 	background-color: rgba(255, 255, 255, 0.4);
 	cursor: pointer;
@@ -417,7 +417,8 @@ export default {
 	align-items: center;
 	gap: 0.5rem;
 	min-width: 150px; /* 固定最小寬度 */
-	justify-content: flex-start;
+	justify-content: center;
+	
 }
 
 .Social_Media_Item svg {

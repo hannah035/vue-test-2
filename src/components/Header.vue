@@ -91,6 +91,7 @@ function toggleMobileMenu() {
 	border-top: 1px solid #fff;
 	border-bottom: 1px solid #fff;
 	padding: 0 20px;
+	z-index: 10;
 }
 
 /* Hamburger Menu Button Styles */
@@ -121,6 +122,7 @@ function toggleMobileMenu() {
 	justify-content: space-between;
 	align-items: center;
 	transition: all 0.3s ease;
+	z-index: 30;
 }
 
 .HeaderLeftContents {

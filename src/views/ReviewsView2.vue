@@ -1,4 +1,108 @@
 <template>
+	<div v-if="showReviewForm && isLoggedIn" class="backdrop"></div>
+	<div v-if="showReviewForm && isLoggedIn" class="backdrop-blur"></div>
+	<!-- 新增 Review 表單 -->
+	<div v-if="showReviewForm && isLoggedIn" class="add-review-form">
+		<h4>Add New Review</h4>
+		<div class="form-group">
+			<label>Subject:</label>
+			<input
+				v-model="newReview.subject"
+				type="text"
+				placeholder="Enter review subject..."
+				class="review-input"
+				:disabled="submittingReview"
+			/>
+		</div>
+		<div class="form-group">
+			<label>Rating:</label>
+			<div class="rating-input">
+				<span
+					v-for="n in 5"
+					:key="n"
+					class="star-input"
+					:class="{ active: n <= newReview.rate }"
+					@click="setRating(n)"
+					@hover="hoverRating = n"
+					>★</span
+				>
+			</div>
+		</div>
+		<div class="form-group">
+			<label>Content:</label>
+			<textarea
+				v-model="newReview.content"
+				placeholder="Write your review..."
+				class="review-textarea"
+				:disabled="submittingReview"
+			></textarea>
+		</div>
+		<div class="form-group">
+			<label>Tags (comma separated):</label>
+			<input
+				v-model="newReview.tagsInput"
+				type="text"
+				placeholder="e.g. 電影, 科幻, 哲學"
+				class="review-input"
+				:disabled="submittingReview"
+			/>
+		</div>
+		<div class="form-buttons">
+			<button
+				@click="cancelReviewForm"
+				class="cancel-btn"
+				aria-label="Cancel"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+				>
+					<path
+						d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
+						stroke="white"
+						stroke-linecap="round"
+					/>
+					<path
+						d="M9 9L15 15"
+						stroke="white"
+						stroke-linecap="round"
+					/>
+					<path
+						d="M15 9L9 15"
+						stroke="white"
+						stroke-linecap="round"
+					/>
+				</svg>
+			</button>
+			<button
+				@click="submitReview"
+				:disabled="!isValidReview || submittingReview"
+				class="submit-btn"
+				aria-label="Submit"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+				>
+					<path
+						d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
+						stroke="white"
+					/>
+				</svg>
+			</button>
+		</div>
+	</div>
+
+	<!-- 如果未登入，顯示登入提示 -->
+	<div v-if="!isLoggedIn" class="login-prompt">
+		<p>Login to add comments and reviews</p>
+	</div>
 	<div class="reviews-container">
 		<!-- 載入狀態 -->
 		<div v-if="loading" class="loading-container">
@@ -15,11 +119,14 @@
 		<div v-else-if="reviews.length > 0" class="main-layout">
 			<!-- 左側主要評論區域 -->
 			<div class="main-content">
-
 				<!-- 標籤顯示 -->
 				<div class="tags-display">
-					<span v-for="tag in currentReview.tags" :key="tag" class="tag-item"
-						:class="{ active: selectedTags.includes(tag) }">
+					<span
+						v-for="tag in currentReview.tags"
+						:key="tag"
+						class="tag-item"
+						:class="{ active: selectedTags.includes(tag) }"
+					>
 						#{{ tag }}
 					</span>
 				</div>
@@ -30,8 +137,13 @@
 				<!-- 評分 -->
 				<div class="rating-section">
 					<div class="stars">
-						<span v-for="n in 5" :key="n" class="star"
-							:class="{ filled: n <= currentReview.rating }">★</span>
+						<span
+							v-for="n in 5"
+							:key="n"
+							class="star"
+							:class="{ filled: n <= currentReview.rating }"
+							>★</span
+						>
 					</div>
 				</div>
 
@@ -40,21 +152,31 @@
 					<p>{{ currentReview.content }}</p>
 				</div>
 
-
-
 				<!-- 作者和日期 -->
 				<div class="author-section">
 					<div class="author-info">
-						<span class="author-name">{{ currentReview.author }}</span>
-						<span class="review-date">{{ currentReview.date }}</span>
+						<span class="author-name">{{
+							currentReview.author
+						}}</span>
+						<span class="review-date">{{
+							currentReview.date
+						}}</span>
 					</div>
 				</div>
 
 				<!-- Navigation Arrows -->
-				<button class="nav-arrow nav-left" @click="previousReview" :disabled="currentIndex === 0">
+				<button
+					class="nav-arrow nav-left"
+					@click="previousReview"
+					:disabled="currentIndex === 0"
+				>
 					&#8249;
 				</button>
-				<button class="nav-arrow nav-right" @click="nextReview" :disabled="currentIndex === reviews.length - 1">
+				<button
+					class="nav-arrow nav-right"
+					@click="nextReview"
+					:disabled="currentIndex === reviews.length - 1"
+				>
 					&#8250;
 				</button>
 			</div>
@@ -62,63 +184,229 @@
 			<!-- 右側評論列表 -->
 			<div class="comments-sidebar">
 				<!-- 評論回覆區域 -->
-				<div v-if="currentReview.comments && currentReview.comments.length > 0" class="comments-container">
-					<div v-for="comment in currentReview.comments" :key="comment.id" class="comment-item">
+				<div
+					v-if="
+						currentReview.comments &&
+						currentReview.comments.length > 0
+					"
+					class="comments-container"
+				>
+					<div
+						v-for="comment in currentReview.comments"
+						:key="comment.id"
+						class="comment-item"
+					>
 						<div class="comment-header">
-							<span class="comment-name">{{ comment.author }}</span>
+							<span class="comment-name">{{
+								comment.author
+							}}</span>
 							<!-- <span class="comment-date">{{ comment.date }}</span> -->
 						</div>
 						<div class="comment-text">{{ comment.content }}</div>
 
+						<!-- 顯示回覆 -->
+						<div
+							v-if="comment.replies && comment.replies.length > 0"
+							class="replies-section"
+						>
+							<div
+								v-for="reply in comment.replies"
+								:key="reply.id"
+								class="reply-item"
+							>
+								<div class="reply-header">
+									<span class="reply-author">{{
+										reply.author
+									}}</span>
+									<!-- <span class="reply-date">{{ reply.date }}</span> -->
+								</div>
+								<div class="reply-content">
+									{{ reply.content }}
+								</div>
+							</div>
+						</div>
 						<!-- 回覆按鈕 (只有登入用戶可見且回覆表單未顯示) -->
-						<div v-if="isLoggedIn && showCommentReply !== comment.id" class="comment-actions">
-							<button @click="toggleCommentReply(comment.id)" class="reply-arrow">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" viewBox="0 0 24 20"
-									fill="none">
+						<div
+							v-if="isLoggedIn && showCommentReply !== comment.id"
+							class="comment-actions"
+						>
+							<button
+								@click="toggleCommentReply(comment.id)"
+								class="reply-arrow"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="20"
+									viewBox="0 0 24 20"
+									fill="none"
+								>
 									<path
 										d="M1.00029 12.0479L0.645204 11.6959L0.296222 12.048L0.645223 12.4L1.00029 12.0479ZM23.4045 0.999988C23.4045 0.723845 23.1806 0.499994 22.9045 0.500001C22.6284 0.500008 22.4045 0.723872 22.4045 1.00001L23.4045 0.999988ZM7.84527 5.14316L7.49018 4.79115L0.645204 11.6959L1.00029 12.0479L1.35538 12.4L8.20036 5.49517L7.84527 5.14316ZM1.00029 12.0479L0.645223 12.4L7.49057 19.3044L7.84564 18.9524L8.20071 18.6003L1.35536 11.6959L1.00029 12.0479ZM1.00029 12.0479L1.00031 12.5479L16.9048 12.5475L16.9048 12.0475L16.9048 11.5475L1.00028 11.5479L1.00029 12.0479ZM22.9046 6.04736L23.4046 6.04735L23.4045 0.999988L22.9045 1L22.4045 1.00001L22.4046 6.04738L22.9046 6.04736ZM16.9048 12.0475L16.9048 12.5475C20.4947 12.5474 23.4047 9.6372 23.4046 6.04735L22.9046 6.04736L22.4046 6.04738C22.4047 9.08494 19.9424 11.5474 16.9048 11.5475L16.9048 12.0475Z"
-										fill="white" />
+										fill="white"
+									/>
 								</svg>
 							</button>
 						</div>
 
 						<!-- 回覆評論表單 -->
-						<div v-if="showCommentReply === comment.id && isLoggedIn" class="reply-form small">
-							<textarea v-model="replyContent" placeholder="Write your reply..." class="reply-textarea"
-								:disabled="submittingReply"></textarea>
-							<div class="form-buttons">
-								<button @click="cancelCommentReply" class="cancel-btn" aria-label="Cancel">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-										fill="none">
+						<div
+							v-if="showCommentReply === comment.id && isLoggedIn"
+							class="reply-form small"
+						>
+							<div class="textarea-container">
+								<textarea
+									v-model="replyContent"
+									placeholder="Write your reply..."
+									class="reply-textarea"
+									:disabled="submittingReply"
+								></textarea>
+								<button
+									@click="cancelCommentReply"
+									class="cancel-btn"
+									aria-label="Cancel"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+									>
 										<path
 											d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
-											stroke="white" stroke-linecap="round" />
-										<path d="M9 9L15 15" stroke="white" stroke-linecap="round" />
-										<path d="M15 9L9 15" stroke="white" stroke-linecap="round" />
+											stroke="white"
+											stroke-linecap="round"
+										/>
+										<path
+											d="M9 9L15 15"
+											stroke="white"
+											stroke-linecap="round"
+										/>
+										<path
+											d="M15 9L9 15"
+											stroke="white"
+											stroke-linecap="round"
+										/>
 									</svg>
 								</button>
-								<button @click="submitReply(comment.id)"
-									:disabled="!replyContent.trim() || submittingReply" class="submit-btn"
-									aria-label="Submit">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-										fill="none">
+								<button
+									@click="submitReply(comment.id)"
+									:disabled="
+										!replyContent.trim() || submittingReply
+									"
+									class="submit-btn"
+									aria-label="Submit"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										viewBox="0 0 24 24"
+										fill="none"
+									>
 										<path
 											d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
-											stroke="white" />
+											stroke="white"
+										/>
 									</svg>
 								</button>
 							</div>
-						</div>
 
-						<!-- 顯示回覆 -->
-						<div v-if="comment.replies && comment.replies.length > 0" class="replies-section">
-							<div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-								<div class="reply-header">
-									<span class="reply-author">{{ reply.author }}</span>
-									<!-- <span class="reply-date">{{ reply.date }}</span> -->
-								</div>
-								<div class="reply-content">{{ reply.content }}</div>
-							</div>
+							<!-- <div class="form-buttons">
+								
+							</div> -->
+						</div>
+					</div>
+					<button
+						class="add-comment-btn"
+						@click="toggleReplyForm"
+						v-if="isLoggedIn && !showReplyForm"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="45"
+							height="45"
+							viewBox="0 0 45 45"
+							fill="none"
+						>
+							<path
+								d="M9.625 6.125H35.375C37.308 6.125 38.875 7.692 38.875 9.625V35.375C38.875 37.308 37.308 38.875 35.375 38.875H9.625C7.692 38.875 6.125 37.308 6.125 35.375V9.625C6.125 7.692 7.692 6.125 9.625 6.125Z"
+								stroke="white"
+							/>
+							<path
+								d="M22.5 15L22.5 30"
+								stroke="white"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M30 22.5L15 22.5"
+								stroke="white"
+								stroke-linejoin="round"
+							/>
+						</svg>
+					</button>
+					<!-- 新增評論表單 (在按鈕下方顯示) -->
+					<div v-if="showReplyForm && isLoggedIn" class="reply-form">
+						<h4>Reply to this review</h4>
+
+						<div class="textarea-container">
+							<textarea
+								v-model="commentContent"
+								placeholder="Write your comment..."
+								class="reply-textarea"
+								:disabled="submittingReply"
+							></textarea>
+							<button
+								@click="cancelReply"
+								class="cancel-btn"
+								aria-label="Cancel"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+								>
+									<path
+										d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
+										stroke="white"
+										stroke-linecap="round"
+									/>
+									<path
+										d="M9 9L15 15"
+										stroke="white"
+										stroke-linecap="round"
+									/>
+									<path
+										d="M15 9L9 15"
+										stroke="white"
+										stroke-linecap="round"
+									/>
+								</svg>
+							</button>
+							<button
+								@click="submitComment"
+								:disabled="
+									!commentContent.trim() || submittingReply
+								"
+								class="submit-btn"
+								aria-label="Submit"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									viewBox="0 0 24 24"
+									fill="none"
+								>
+									<path
+										d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
+										stroke="white"
+									/>
+								</svg>
+							</button>
 						</div>
 					</div>
 				</div>
@@ -129,110 +417,23 @@
 				</div>
 
 				<!-- 新增評論按鈕 -->
-				<button class="add-comment-btn" @click="toggleReplyForm" v-if="isLoggedIn && !showReplyForm">
-					<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" fill="none">
-						<path
-							d="M9.625 6.125H35.375C37.308 6.125 38.875 7.692 38.875 9.625V35.375C38.875 37.308 37.308 38.875 35.375 38.875H9.625C7.692 38.875 6.125 37.308 6.125 35.375V9.625C6.125 7.692 7.692 6.125 9.625 6.125Z"
-							stroke="white" />
-						<path d="M22.5 15L22.5 30" stroke="white" stroke-linejoin="round" />
-						<path d="M30 22.5L15 22.5" stroke="white" stroke-linejoin="round" />
-					</svg>
-				</button>
-
-				<!-- 新增評論表單 (在按鈕下方顯示) -->
-				<div v-if="showReplyForm && isLoggedIn" class="reply-form">
-					<h4>Reply to this review</h4>
-					<textarea v-model="commentContent" placeholder="Write your comment..." class="reply-textarea"
-						:disabled="submittingReply"></textarea>
-					<div class="form-buttons">
-						<button @click="cancelReply" class="cancel-btn" aria-label="Cancel">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-								fill="none">
-								<path
-									d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
-									stroke="white" stroke-linecap="round" />
-								<path d="M9 9L15 15" stroke="white" stroke-linecap="round" />
-								<path d="M15 9L9 15" stroke="white" stroke-linecap="round" />
-							</svg>
-						</button>
-						<button @click="submitComment" :disabled="!commentContent.trim() || submittingReply"
-							class="submit-btn" aria-label="Submit">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-								fill="none">
-								<path
-									d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
-									stroke="white" />
-							</svg>
-						</button>
-					</div>
-				</div>
-
-
-
-				<!-- 新增 Review 表單 -->
-				<div v-if="showReviewForm && isLoggedIn" class="add-review-form">
-					<h4>Add New Review</h4>
-					<div class="form-group">
-						<label>Subject:</label>
-						<input v-model="newReview.subject" type="text" placeholder="Enter review subject..."
-							class="review-input" :disabled="submittingReview" />
-					</div>
-					<div class="form-group">
-						<label>Rating:</label>
-						<div class="rating-input">
-							<span v-for="n in 5" :key="n" class="star-input" :class="{ active: n <= newReview.rate }"
-								@click="setRating(n)">★</span>
-						</div>
-					</div>
-					<div class="form-group">
-						<label>Content:</label>
-						<textarea v-model="newReview.content" placeholder="Write your review..." class="review-textarea"
-							:disabled="submittingReview"></textarea>
-					</div>
-					<div class="form-group">
-						<label>Tags (comma separated):</label>
-						<input v-model="newReview.tagsInput" type="text" placeholder="e.g. 電影, 科幻, 哲學"
-							class="review-input" :disabled="submittingReview" />
-					</div>
-					<div class="form-buttons">
-						<button @click="cancelReviewForm" class="cancel-btn" aria-label="Cancel">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-								fill="none">
-								<path
-									d="M12 21C10.8181 21 9.64778 20.7672 8.55585 20.3149C7.46392 19.8626 6.47177 19.1997 5.63604 18.364C4.80031 17.5282 4.13738 16.5361 3.68508 15.4442C3.23279 14.3522 3 13.1819 3 12C3 10.8181 3.23279 9.64778 3.68508 8.55585C4.13738 7.46392 4.80031 6.47177 5.63604 5.63604C6.47177 4.80031 7.46392 4.13738 8.55585 3.68508C9.64778 3.23279 10.8181 3 12 3C13.1819 3 14.3522 3.23279 15.4442 3.68508C16.5361 4.13738 17.5282 4.80031 18.364 5.63604C19.1997 6.47177 19.8626 7.46392 20.3149 8.55585C20.7672 9.64778 21 10.8181 21 12C21 13.1819 20.7672 14.3522 20.3149 15.4442C19.8626 16.5361 19.1997 17.5282 18.364 18.364C17.5282 19.1997 16.5361 19.8626 15.4441 20.3149C14.3522 20.7672 13.1819 21 12 21L12 21Z"
-									stroke="white" stroke-linecap="round" />
-								<path d="M9 9L15 15" stroke="white" stroke-linecap="round" />
-								<path d="M15 9L9 15" stroke="white" stroke-linecap="round" />
-							</svg>
-						</button>
-						<button @click="submitReview" :disabled="!isValidReview || submittingReview" class="submit-btn"
-							aria-label="Submit">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-								fill="none">
-								<path
-									d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
-									stroke="white" />
-							</svg>
-						</button>
-					</div>
-				</div>
-
-				<!-- 如果未登入，顯示登入提示 -->
-				<div v-if="!isLoggedIn" class="login-prompt">
-					<p>Login to add comments and reviews</p>
-				</div>
 			</div>
 
 			<!-- 底部標籤選擇區域 -->
 			<div class="bottom-tags">
-
 				<!-- 標籤列表 -->
 				<div class="tags-container">
-					<div v-for="tag in tags" :key="tag" class="tag-selector"
-						:class="{ active: selectedTags.includes(tag) }" @click="toggleTag(tag)">
-						<span class="tag-text">#{{ tag }}({{ getTagCount(tag) }})</span>
+					<div
+						v-for="tag in tags"
+						:key="tag"
+						class="tag-selector"
+						:class="{ active: selectedTags.includes(tag) }"
+						@click="toggleTag(tag)"
+					>
+						<span class="tag-text"
+							>#{{ tag }}({{ getTagCount(tag) }})</span
+						>
 					</div>
-
 				</div>
 
 				<!-- 排序和結果資訊 -->
@@ -240,9 +441,7 @@
 					<div class="results-info">
 						<span class="total-count">
 							{{ filteredReviews.length }} reviews
-
 						</span>
-
 					</div>
 
 					<div class="sort-controls">
@@ -252,22 +451,30 @@
 							<option value="title">Title</option>
 							<option value="rating">Rating</option>
 						</select>
-						<span v-if="selectedTags.length > 0" class="filter-info">
+						<span
+							v-if="selectedTags.length > 0"
+							class="filter-info"
+						>
 							({{ selectedTags.length }} tags)
 						</span>
 					</div>
-					<button v-if="selectedTags.length > 0" @click="clearAllTags" class="clear-tags-btn">
+					<button
+						v-if="selectedTags.length > 0"
+						@click="clearAllTags"
+						class="clear-tags-btn"
+					>
 						clear all
 					</button>
 
 					<!-- 新增 Review 按鈕 -->
-					<button class="add-review-btn" @click="toggleReviewForm" v-if="isLoggedIn">
+					<button
+						class="add-review-btn"
+						@click="toggleReviewForm"
+						v-if="isLoggedIn"
+					>
 						{{ showReviewForm ? '✕' : 'Add Review' }}
 					</button>
-
-
 				</div>
-
 			</div>
 		</div>
 
@@ -282,11 +489,11 @@
 import reviewsService from '@/services/reviewsService'
 
 export default {
-	name: "ReviewsView2",
+	name: 'ReviewsView2',
 	data() {
 		return {
 			currentIndex: 0,
-			sortBy: "date",
+			sortBy: 'date',
 			tags: [],
 			selectedTags: [], // 选中的标签
 			reviews: [],
@@ -314,8 +521,9 @@ export default {
 				rate: 0,
 				content: '',
 				tagsInput: '',
-				tags: []
-			}
+				tags: [],
+			},
+			hoverRating: 0, // 用於星級評分的懸停效果
 		}
 	},
 	computed: {
@@ -328,19 +536,19 @@ export default {
 			}
 
 			// 篩選包含任意選中 tags 的評論（聯集）
-			const filtered = this.allReviews.filter(review => {
-				return this.selectedTags.some(tag =>
-					review.tags && review.tags.includes(tag)
+			const filtered = this.allReviews.filter((review) => {
+				return this.selectedTags.some(
+					(tag) => review.tags && review.tags.includes(tag)
 				)
 			})
 
 			// 按照包含的選中 tags 數量排序，優先顯示包含更多選中 tags 的評論
 			return filtered.sort((a, b) => {
-				const aMatchCount = this.selectedTags.filter(tag =>
-					a.tags && a.tags.includes(tag)
+				const aMatchCount = this.selectedTags.filter(
+					(tag) => a.tags && a.tags.includes(tag)
 				).length
-				const bMatchCount = this.selectedTags.filter(tag =>
-					b.tags && b.tags.includes(tag)
+				const bMatchCount = this.selectedTags.filter(
+					(tag) => b.tags && b.tags.includes(tag)
 				).length
 
 				// 先按匹配數量降序排序
@@ -353,10 +561,12 @@ export default {
 			})
 		},
 		isValidReview() {
-			return this.newReview.subject.trim() &&
+			return (
+				this.newReview.subject.trim() &&
 				this.newReview.content.trim() &&
 				this.newReview.rate > 0
-		}
+			)
+		},
 	},
 	watch: {
 		filteredReviews: {
@@ -366,8 +576,8 @@ export default {
 					this.currentIndex = Math.max(0, newVal.length - 1)
 				}
 			},
-			immediate: true
-		}
+			immediate: true,
+		},
 	},
 	methods: {
 		// 檢查登入狀態
@@ -383,7 +593,10 @@ export default {
 				try {
 					this.currentUser = JSON.parse(userData)
 					this.isLoggedIn = true
-					console.log('Login status: true, currentUser:', this.currentUser)
+					console.log(
+						'Login status: true, currentUser:',
+						this.currentUser
+					)
 				} catch (error) {
 					console.error('Error parsing user data:', error)
 					this.isLoggedIn = false
@@ -440,21 +653,22 @@ export default {
 
 		// 获取标签对应的评论数量
 		getTagCount(tag) {
-			return this.allReviews.filter(review =>
-				review.tags && review.tags.includes(tag)
+			return this.allReviews.filter(
+				(review) => review.tags && review.tags.includes(tag)
 			).length
 		},
 
 		// 获取评论匹配的选中标签数量
 		getMatchingTagsCount(review) {
 			if (!this.selectedTags.length || !review.tags) return 0
-			return this.selectedTags.filter(tag => review.tags.includes(tag)).length
+			return this.selectedTags.filter((tag) => review.tags.includes(tag))
+				.length
 		},
 
 		// 获取评论匹配的选中标签列表
 		getMatchingTags(review) {
 			if (!this.selectedTags.length || !review.tags) return []
-			return this.selectedTags.filter(tag => review.tags.includes(tag))
+			return this.selectedTags.filter((tag) => review.tags.includes(tag))
 		},
 
 		async fetchTags() {
@@ -486,13 +700,15 @@ export default {
 
 		sortReviews() {
 			switch (this.sortBy) {
-				case "date":
-					this.reviews.sort((a, b) => new Date(b.date) - new Date(a.date))
+				case 'date':
+					this.reviews.sort(
+						(a, b) => new Date(b.date) - new Date(a.date)
+					)
 					break
-				case "title":
+				case 'title':
 					this.reviews.sort((a, b) => a.title.localeCompare(b.title))
 					break
-				case "rating":
+				case 'rating':
 					this.reviews.sort((a, b) => b.rating - a.rating)
 					break
 			}
@@ -524,10 +740,13 @@ export default {
 				const commentData = {
 					userId: this.currentUser._id,
 					content: this.commentContent.trim(),
-					parentId: null // 主評論，沒有父評論
+					parentId: null, // 主評論，沒有父評論
 				}
 
-				const response = await reviewsService.createComment(this.currentReview.id, commentData)
+				const response = await reviewsService.createComment(
+					this.currentReview.id,
+					commentData
+				)
 
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的評論
@@ -579,10 +798,13 @@ export default {
 				const replyData = {
 					userId: this.currentUser._id,
 					content: this.replyContent.trim(),
-					parentId: commentId // 回覆特定評論
+					parentId: commentId, // 回覆特定評論
 				}
 
-				const response = await reviewsService.createComment(this.currentReview.id, replyData)
+				const response = await reviewsService.createComment(
+					this.currentReview.id,
+					replyData
+				)
 
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的回覆
@@ -633,10 +855,13 @@ export default {
 				const commentData = {
 					userId: this.currentUser._id,
 					content: this.reviewReplyContent.trim(),
-					parentId: null // 主評論，沒有父評論
+					parentId: null, // 主評論，沒有父評論
 				}
 
-				const response = await reviewsService.createComment(reviewId, commentData)
+				const response = await reviewsService.createComment(
+					reviewId,
+					commentData
+				)
 
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的評論
@@ -687,10 +912,13 @@ export default {
 				const replyData = {
 					userId: this.currentUser._id,
 					content: this.commentReplyContent.trim(),
-					parentId: commentId // 回覆特定評論
+					parentId: commentId, // 回覆特定評論
 				}
 
-				const response = await reviewsService.createComment(reviewId, replyData)
+				const response = await reviewsService.createComment(
+					reviewId,
+					replyData
+				)
 
 				if (response.success) {
 					// 重新獲取評論列表以顯示新的回覆
@@ -748,12 +976,20 @@ export default {
 				rate: 0,
 				content: '',
 				tagsInput: '',
-				tags: []
+				tags: [],
 			}
 		},
 
 		setRating(rating) {
 			this.newReview.rate = rating
+		},
+		hoverRating(rating) {
+			for (let i = 1; i <= 5; i++) {
+				const star = document.querySelector(`.star-${i}`)
+				if (star) {
+					star.classList.toggle('hover', i <= rating)
+				}
+			}
 		},
 
 		async submitReview() {
@@ -767,15 +1003,15 @@ export default {
 				// 處理標籤
 				const tags = this.newReview.tagsInput
 					.split(',')
-					.map(tag => tag.trim())
-					.filter(tag => tag.length > 0)
+					.map((tag) => tag.trim())
+					.filter((tag) => tag.length > 0)
 
 				const reviewData = {
 					userId: this.currentUser._id,
 					subject: this.newReview.subject.trim(),
 					rate: this.newReview.rate,
 					content: this.newReview.content.trim(),
-					tags: tags
+					tags: tags,
 				}
 
 				const response = await reviewsService.createReview(reviewData)
@@ -831,6 +1067,24 @@ export default {
 </script>
 
 <style scoped>
+.backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+}
+.backdrop-blur {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay */
+	backdrop-filter: blur(5px); /* Blur effect */
+	z-index: 8;
+}
 /* ========================================
    主要容器樣式 - 整個評論頁面的根容器
    ======================================== */
@@ -843,7 +1097,7 @@ export default {
 	/* 黑色背景，營造暗色主題 */
 	color: #fff;
 	/* 白色文字，與黑色背景形成對比 */
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	/* 使用等寬字體，營造程式碼風格 */
 	box-sizing: border-box;
 	/* 包含 padding 在總寬度內，避免溢出 */
@@ -851,7 +1105,7 @@ export default {
 	/* 使用 Flexbox 布局 */
 	flex-direction: column;
 	/* 子元素垂直排列 */
-	color: #FFF;
+	color: #fff;
 }
 
 /* ========================================
@@ -868,9 +1122,9 @@ export default {
 	/* 總高度為視窗高度減去容器 padding (20px * 2) */
 	grid-template-areas:
 		/* 定義網格區域名稱，方便管理布局 */
-		"content sidebar"
+		'content sidebar'
 		/* 第一列：左邊內容區，右邊側邊欄 */
-		"tags tags";
+		'tags tags';
 	/* 第二列：標籤區域橫跨兩欄 */
 }
 
@@ -971,7 +1225,6 @@ export default {
 	margin: 0 auto;
 	/* 上下邊距為0，左右自動邊距實現容器置中 */
 }
-
 
 /* 個別標籤樣式 */
 .tag-item {
@@ -1103,7 +1356,7 @@ export default {
 	/* 垂直置中 */
 	transform: translateY(-50%);
 	/* 精確的垂直置中對齊 */
-	background-color: rgba(255, 255, 255, 0.1);
+	/* background-color: rgba(255, 255, 255, 0.1); */
 	/* 半透明白色背景 */
 	border: none;
 	/* 移除預設邊框 */
@@ -1123,13 +1376,15 @@ export default {
 	/* 所有屬性的平滑過渡動畫 */
 	backdrop-filter: blur(10px);
 	/* 背景模糊效果，現代毛玻璃風格 */
+	text-align: center;
 }
 
 /* 導航箭頭懸停效果 - 僅在非禁用狀態下生效 */
 .nav-arrow:hover:not(:disabled) {
-	background-color: rgba(255, 255, 255, 0.2);
+	/* background-color: rgba(255, 255, 255, 0.2); */
 	/* 懸停時背景更亮 */
 	transform: translateY(-50%) scale(1.1);
+	font-size: 18px;
 	/* 懸停時稍微放大 */
 }
 
@@ -1173,6 +1428,7 @@ export default {
 	/* 垂直排列評論項目 */
 	gap: 0;
 	/* 移除間距，讓評論項目緊密排列 */
+	overflow-y: scroll;
 }
 
 /* 單個評論項目 */
@@ -1195,7 +1451,7 @@ export default {
 	/* 確保評論項目在置中容器中仍然伸展 */
 	box-sizing: border-box;
 	/* 包含 padding 在總寬度內，這是關鍵！ */
-	overflow: hidden;
+	/* overflow: hidden; */
 	/* 隱藏任何溢出的內容，確保不會跑出邊界 */
 	word-wrap: break-word;
 	/* 強制長單詞換行，處理新增評論的長文字 */
@@ -1291,10 +1547,9 @@ export default {
 	/* SVG 填滿按鈕 */
 	stroke-width: 1px;
 	/* 設定線條寬度 */
-	stroke: #FFF;
+	stroke: #fff;
 	/* 設定線條顏色 */
 }
-
 
 /* 新增評論按鈕 */
 .add-comment-btn {
@@ -1320,6 +1575,9 @@ export default {
 	/* 平滑過渡動畫 */
 	padding: 0;
 	/* 移除內邊距 */
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
 }
 
 .add-comment-btn svg {
@@ -1343,7 +1601,7 @@ export default {
 .add-comment-btn:hover {
 	opacity: 0.8;
 	/* 懸停時降低透明度，提供視覺回饋 */
-	transform: scale(1.05);
+	transform: translateX(-50%) scale(1.05);
 	/* 懸停時輕微放大 */
 }
 
@@ -1375,8 +1633,11 @@ export default {
 	background-color: #1a1a1a;
 	border-radius: 8px;
 	border: 1px solid #333;
-	position: relative;
-	width: 100%;
+	position: absolute;
+	z-index: 1001;
+	width: 40%;
+	left: 50%;
+	transform: translateX(-50%);
 	/* 確保表單佔滿寬度 */
 	align-self: stretch;
 	/* 確保表單在置中容器中仍然伸展 */
@@ -1386,6 +1647,18 @@ export default {
 	margin: 0 0 15px 0;
 	color: #fff;
 	font-size: 16px;
+}
+.add-review-form .form-buttons {
+	position: relative;
+	height: fit-content;
+}
+.form-buttons .cancel-btn {
+	position: relative;
+	left: 0;
+}
+.form-buttons .submit-btn {
+	position: absolute;
+	right: 0;
 }
 
 .form-group {
@@ -1623,16 +1896,17 @@ export default {
 .reply-form {
 	background-color: #2a2a2a;
 	border-radius: 8px;
-	border: 1px solid #444;
 	width: 100%;
 	/* 確保表單佔滿寬度 */
 	align-self: stretch;
 	/* 確保表單在置中容器中仍然伸展 */
+	box-sizing: border-box;
+	padding: 15px;
 }
 
 .reply-form.small {
 	margin-top: 10px;
-	padding: 10px;
+	padding: 0px;
 }
 
 .reply-form.tiny {
@@ -1645,10 +1919,28 @@ export default {
 	color: #fff;
 	font-size: 16px;
 }
+.textarea-container {
+	width: 100%;
+	height: min-content;
+	padding: 0;
+	position: relative;
+}
+.textarea-container button {
+	position: absolute;
+	bottom: 15px;
+	/* TODO: why 15px( 10px + 5px) */
+}
+.textarea-container .cancel-btn {
+	left: 0px;
+}
+.textarea-container .submit-btn {
+	right: 0px;
+}
 
 .reply-textarea {
 	width: 100%;
-	min-height: 80px;
+	min-height: 120px;
+
 	background-color: #333;
 	color: #fff;
 	border: 1px solid #555;
@@ -1677,10 +1969,10 @@ export default {
 }
 
 .submit-btn {
-	background-color: #007acc;
+	/* background-color: #007acc; */
 	color: #fff;
 	border: none;
-	padding: 8px 16px;
+	padding: 8px 16px 3px 16px;
 	border-radius: 4px;
 	cursor: pointer;
 	font-family: inherit;
@@ -1689,29 +1981,29 @@ export default {
 }
 
 .submit-btn:hover:not(:disabled) {
-	background-color: #0056b3;
+	/* background-color: #0056b3; */
 }
 
 .submit-btn:disabled {
-	background-color: #555;
+	/* background-color: #555; */
 	cursor: not-allowed;
 }
 
 .cancel-btn {
-	background-color: #666;
+	/* background-color: #666; */
 	color: #fff;
 	border: none;
-	padding: 8px 16px;
+	padding: 8px 16px 3px 16px;
 	border-radius: 4px;
 	cursor: pointer;
 	font-family: inherit;
 	font-size: 14px;
 	transition: background-color 0.3s;
 }
-
+/* 
 .cancel-btn:hover {
 	background-color: #777;
-}
+} */
 
 /* 評論區域樣式 */
 .comments-section {
@@ -1812,21 +2104,28 @@ export default {
 	padding: 8px;
 }
 
-
-
 /* 響應式設計 */
 @media (max-width: 768px) {
 	.main-layout {
 		grid-template-columns: 1fr;
 		grid-template-rows: auto auto auto;
 		grid-template-areas:
-			"tags"
-			"content"
-			"sidebar";
+			'tags'
+			'content'
+			'sidebar';
+	}
+	.add-review-form {
+		width: 80%;
+		position: fixed;
 	}
 
-	.main-content,
-	.comments-sidebar,
+	.main-content {
+		height: fit-content;
+	}
+
+	.comments-sidebar {
+		height: fit-content;
+	}
 	.bottom-tags {
 		min-width: 0;
 		width: 100%;
@@ -1843,13 +2142,13 @@ export default {
 		font-size: 16px;
 	}
 
-	.nav-left {
+	/* .nav-left {
 		left: -20px;
 	}
 
 	.nav-right {
 		right: -20px;
-	}
+	} */
 }
 
 /* 載入和錯誤狀態樣式 */

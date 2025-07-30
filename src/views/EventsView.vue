@@ -144,13 +144,15 @@ p {
 	padding: 0;
 }
 .container {
-	display: flex;
+	display: grid;
 	height: 100%;
+	/* width: 100%; */
 }
 
 .left-container {
 	width: 82%;
 	height: 100%;
+	/* grid-area: left; */
 }
 
 .background-card {
@@ -158,6 +160,7 @@ p {
 	height: 85%;
 	margin-left: 5%;
 	margin-right: 0%;
+	width: 90%;
 	z-index: 2;
 	padding: 2% 3%;
 	background-color: var(--card-color);
@@ -302,6 +305,28 @@ p {
 }
 .blank-picker .picker {
 	scroll-snap-align: none;
+}
+@media (max-width: 768px) {
+	.container {
+		grid-template-columns: 1fr;
+		grid-template-rows: 20% 1fr;
+		grid-template-areas: "right" "left";
+	}
+	.left-container {
+		width: 100%;
+		height: 100%;
+		grid-area: left;
+		overflow-y: scroll;
+	}
+	.right-container {
+		position: relative;
+		grid-area: right;
+		width: 100%;
+		
+	}
+	.picker-container{
+		display:none;
+	}
 }
 </style>
 
