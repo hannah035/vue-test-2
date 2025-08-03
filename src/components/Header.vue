@@ -26,11 +26,11 @@ function toggleMobileMenu() {
 				<router-link to="/events" @click="toggleMobileMenu"
 					>Events</router-link
 				>
-				<router-link to="/reviews" @click="toggleMobileMenu"
+				<!-- <router-link to="/reviews" @click="toggleMobileMenu"
 					>Reviews</router-link
-				>
+				> -->
 				<router-link to="/reviews2" @click="toggleMobileMenu"
-					>Review2</router-link
+					>Review</router-link
 				>
 				<router-link to="/books" @click="toggleMobileMenu"
 					>Books</router-link
@@ -73,7 +73,7 @@ function toggleMobileMenu() {
 						/>
 					</svg>
 				</div>
-				<router-link to="/join-us" @click="toggleMobileMenu">Join Us</router-link>
+				<router-link to="/join-us" @click="toggleMobileMenu">Login</router-link>
 			</div>
 		</div>
 	</div>
@@ -128,7 +128,7 @@ function toggleMobileMenu() {
 .HeaderLeftContents {
 	display: flex;
 	justify-content: flex-start;
-	margin: 0 0 0 231px;
+	margin: 0 0 0 150px;
 	gap: 1.5rem;
 }
 
@@ -196,7 +196,7 @@ function toggleMobileMenu() {
 		margin: 0;
 		z-index: 20;
 		opacity: 0;
-		gap: 2rem; /* Space between left and right contents */
+		gap: 1.5rem; /* Space between left and right contents */
 	}
 
 	.NavContainer.active {
@@ -208,7 +208,7 @@ function toggleMobileMenu() {
 		margin: 0;
 		flex-direction: column;
 		align-items: center;
-		gap: 2rem;
+		gap: 1.2rem;
 	}
 
 	.HeaderRightContents {
@@ -218,11 +218,11 @@ function toggleMobileMenu() {
 	}
 
 	.HeaderLeftContents a {
-		font-size: 1.5rem;
+		font-size: 1.2rem;
 	}
 
 	.HeaderRightContents a {
-		font-size: 1.5rem;
+		font-size: 1.2rem;
 	}
 }
 </style>

@@ -1292,7 +1292,7 @@ export default {
 /* 單個星星樣式 - 未填充狀態 */
 .star {
 	color: #000000;
-	/* 深灰色，表示未評分的星星 */
+	/* 純白色，表示未評分的星星 */
 	font-size: 20px;
 	/* 適中的大小，清晰可見 */
 }
@@ -1338,8 +1338,8 @@ export default {
 
 /* 評論日期 */
 .review-date {
-	color: #ccc;
-	/* 淺灰色，表示次要信息 */
+	color: #fff;
+	/* 純白色，表示次要信息 */
 	font-size: 1rem;
 	/* 字體大小調整為 20px */
 }
@@ -1477,16 +1477,16 @@ export default {
 
 /* 評論日期 */
 .comment-date {
-	color: #ccc;
-	/* 淺灰色，表示次要信息 */
+	color: #fff;
+	/* 純白色，表示次要信息 */
 	font-size: 14px;
 	/* 略小的字體 */
 }
 
 /* 評論文字內容 */
 .comment-text {
-	color: #ccc;
-	/* 淺灰色，表示內容文字 */
+	color: #fff;
+	/* 純白色，表示內容文字 */
 	line-height: 1.3;
 	/* 適當的行高，提高可讀性 */
 	word-break: break-word;
@@ -1520,8 +1520,8 @@ export default {
 	/* 無背景，保持簡潔 */
 	border: none;
 	/* 無邊框 */
-	color: #007acc;
-	/* 藍色，表示互動元素 */
+	color: #fff;
+	/* 純白色，表示互動元素 */
 	cursor: pointer;
 	/* 手形游標 */
 	width: 16px;
@@ -1978,10 +1978,6 @@ export default {
 	font-family: inherit;
 	font-size: 14px;
 	transition: background-color 0.3s;
-}
-
-.submit-btn:hover:not(:disabled) {
-	/* background-color: #0056b3; */
 }
 
 .submit-btn:disabled {

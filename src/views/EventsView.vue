@@ -35,15 +35,8 @@
 						id="dropdown-button"
 					>
 						{{ selectedPeriod }}
-						<svg width="28" height="25" viewBox="0 0 40 30">
-							<polyline
-								points="10,0 20,25 30,0"
-								fill="none"
-								stroke="white"
-								stroke-width="4"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+							<path d="M11.8079 14.7695L8.09346 10.3121C7.65924 9.79109 8.02976 9 8.70803 9L15.292 9C15.9702 9 16.3408 9.79108 15.9065 10.3121L12.1921 14.7695C12.0921 14.8895 11.9079 14.8895 11.8079 14.7695Z" fill="white"/>
 						</svg>
 					</button>
 					<div class="dropdown-content" id="dropdown-content">
@@ -117,10 +110,10 @@
 <style lang="css" scoped>
 .title-text {
 	font-size: 1.5rem;
-	font-weight: 600;
+	font-weight: 500;
 	color: white;
-	height: 50px;
-	padding-top: 20px;
+	height: 40px;
+	padding-top: 15px;
 	position: sticky;
 	top: 0px;
 	background: linear-gradient(
@@ -182,9 +175,10 @@ p {
 }
 
 .content-text {
-	font-size: 1.125rem;
-	line-height: 1.75rem;
+	font-size: 1rem;
+	line-height: 1.25rem;
 	color: white;
+	margin-top: 0.3rem;
 }
 .right-container {
 	width: 18%;
@@ -202,14 +196,16 @@ p {
 	width: 100%;
 	background-color: transparent;
 	border: none;
-	display: inline-block;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
 	color: #fff;
 	font-family: 'JetBrains Mono';
-	font-size: 28px;
+	font-size: 1rem;
 	font-style: normal;
 	font-weight: 400;
 	line-height: normal;
-	text-align: center;
 	top: 40%;
 	position: absolute;
 	height: var(--picker-height);
@@ -219,7 +215,7 @@ p {
 	display: none;
 	color: #fff;
 	font-family: 'JetBrains Mono';
-	font-size: 28px;
+	font-size: 1rem;
 	font-style: normal;
 	font-weight: 400;
 	line-height: normal;
@@ -294,7 +290,7 @@ p {
 	background-color: black;
 	color: gray;
 	font-family: 'JetBrains Mono';
-	font-size: 28px;
+	font-size: 1rem;
 	font-style: normal;
 	font-weight: 400;
 	line-height: normal;
@@ -326,6 +322,30 @@ p {
 	}
 	.picker-container{
 		display:none;
+	}
+	
+	/* 手機版字體大小調整 */
+	.title-text {
+		font-size: 1.1rem;
+		height: 30px;
+		padding-top: 10px;
+	}
+	
+	.content-text {
+		font-size: 0.85rem;
+		line-height: 1rem;
+	}
+	
+	.dropdown-button {
+		font-size: 0.85rem;
+	}
+	
+	.period-dropdown .dropdown-content {
+		font-size: 0.85rem;
+	}
+	
+	.picker {
+		font-size: 0.85rem;
 	}
 }
 </style>
