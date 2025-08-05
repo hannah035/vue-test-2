@@ -430,9 +430,7 @@
 						:class="{ active: selectedTags.includes(tag) }"
 						@click="toggleTag(tag)"
 					>
-						<span class="tag-text"
-							>#{{ tag }}({{ getTagCount(tag) }})</span
-						>
+						<span class="tag-text">#{{ tag }}</span>
 					</div>
 				</div>
 
@@ -440,30 +438,23 @@
 				<div class="sort-info">
 					<div class="results-info">
 						<span class="total-count">
-							{{ filteredReviews.length }} reviews
+							{{ filteredReviews.length }} reviews by
 						</span>
 					</div>
 
 					<div class="sort-controls">
-						<label>sorted by</label>
 						<select v-model="sortBy" @change="sortReviews">
 							<option value="date">Date</option>
 							<option value="title">Title</option>
 							<option value="rating">Rating</option>
 						</select>
-						<span
-							v-if="selectedTags.length > 0"
-							class="filter-info"
-						>
-							({{ selectedTags.length }} tags)
-						</span>
 					</div>
 					<button
 						v-if="selectedTags.length > 0"
 						@click="clearAllTags"
 						class="clear-tags-btn"
 					>
-						clear all
+						Reset
 					</button>
 
 					<!-- 新增 Review 按鈕 -->
@@ -1190,10 +1181,12 @@ export default {
 	/* 使用 Flexbox 布局 */
 	flex-direction: column;
 	/* 子元素垂直排列 */
-	gap: 15px;
-	/* 子元素間距 15px */
+	gap: 0;
+	/* 子元素間距 8px */
 	padding: 15px;
-	/* 內部留白 15px，比其他區域稍小 */
+	padding-bottom: 0%;
+	padding-top: 5px;
+	/* 內部留白 10px，比其他區域稍小 */
 	border-top: 1px solid #333;
 	/* 頂部邊框線，與上方內容分隔 */
 	/* 與其他區域相同的邊框樣式 */
@@ -1206,7 +1199,7 @@ export default {
 .tags-display {
 	display: flex;
 	/* 使用 Flexbox 布局 */
-	gap: 10px;
+	gap: 3px;
 	/* 標籤間距 10px */
 	flex-wrap: wrap;
 	/* 標籤過多時自動換行 */
@@ -1228,12 +1221,14 @@ export default {
 
 /* 個別標籤樣式 */
 .tag-item {
-	background-color: #333;
-	/* 深灰色背景，比主背景亮一些 */
+	/* background-color: #333;
+	深灰色背景，比主背景亮一些 */
 	color: #fff;
 	/* 白色文字 */
-	padding: 4px 8px;
-	/* 內部留白：上下 4px，左右 8px */
+	padding: 2px 7px;
+	/* 內部留白：上下 2px，左右 7px */
+	border: 1px solid transparent;
+	/* 透明邊框，防止 active 時尺寸變化 */
 	border-radius: 4px;
 	/* 圓角 4px，柔化邊緣 */
 	font-size: 0.85rem;
@@ -1242,8 +1237,10 @@ export default {
 
 /* 被選中的標籤樣式 */
 .tag-item.active {
-	background-color: #007acc;
-	/* 藍色背景，表示活躍/選中狀態 */
+	background-color: transparent;
+	/* 透明背景，表示活躍/選中狀態 */
+	border: 1px solid rgb(255, 255, 255);
+	/* 半透明白色邊框 */
 }
 
 /* 評論內容段落 */
@@ -1614,7 +1611,7 @@ export default {
 	font-size: 14px;
 	cursor: pointer;
 	transition: background-color 0.3s;
-	margin-top: 10px;
+	
 	width: 200px;
 	/* 固定寬度，避免過寬 */
 	align-self: flex-end;
@@ -1764,34 +1761,33 @@ export default {
 }
 
 .clear-tags-btn {
-	background-color: #666;
+	/* background-color: #666; */
 	color: #fff;
-	border: none;
-	padding: 4px 8px;
+	border: 1px solid rgb(255, 255, 255);
+	padding: 2px 7px;
 	border-radius: 4px;
 	cursor: pointer;
-	font-size: 12px;
+	font-size: 0.85rem;
+	font-family: inherit;
 	transition: background-color 0.3s;
-}
-
-.clear-tags-btn:hover {
-	background-color: #777;
 }
 
 .tags-container {
 	display: flex;
-	gap: 10px;
+	gap: 3px;
 	align-items: center;
 	flex-wrap: wrap;
 }
 
 .tag-selector {
-	background-color: #333;
-	/* 深灰色背景，比主背景亮一些 */
+	/* background-color: #333;
+	深灰色背景，比主背景亮一些 */
 	color: #fff;
 	/* 白色文字 */
-	padding: 4px 8px;
+	padding: 2px 7px;
 	/* 內部留白：上下 4px，左右 8px */
+	border: 1px solid transparent;
+	/* 透明邊框，防止 hover 時尺寸變化 */
 	border-radius: 4px;
 	/* 圓角 4px，柔化邊緣 */
 	font-size: 0.85rem;
@@ -1799,16 +1795,28 @@ export default {
 	cursor: pointer;
 	transition: all 0.3s;
 	white-space: nowrap;
+	display: flex;
+	/* 使用 Flexbox 布局 */
+	align-items: center;
+	/* 垂直置中對齊 */
+	justify-content: center;
+	/* 水平置中對齊 */
+	box-sizing: border-box;
+	/* 包含邊框在總尺寸內 */
 }
 
 .tag-selector:hover {
-	background-color: #444;
+	background-color: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	/* 更淡的半透明白色邊框用於 hover 狀態 */
 }
 
 .tag-selector.active {
-	background-color: #007acc;
-	/* 藍色背景，表示活躍/選中狀態 */
-	color: #fff;
+	background-color: transparent;
+	/* 透明背景，表示活躍/選中狀態 */
+	border: 1px solid rgb(255, 255, 255);
+	/* 半透明白色邊框 */
+	color: #ffffff;
 	/* 白色文字 */
 }
 
@@ -1822,6 +1830,7 @@ export default {
 	/* 靠左對齊所有內容 */
 	align-items: center;
 	gap: 10px;
+	padding-left: 10px;
 }
 
 .results-info {
@@ -1831,14 +1840,14 @@ export default {
 
 .total-count {
 	color: #fff;
-	font-size: 1rem;
+	font-size: 0.85rem;
 }
 
-.filter-info {
+/* .filter-info {
 	color: #ffffff;
 	font-size: 1rem;
 	font-weight: normal;
-}
+} */
 
 .sort-controls {
 	display: flex;
@@ -1848,16 +1857,35 @@ export default {
 
 .sort-controls label {
 	color: #fff;
-	font-size: 1rem;
+	font-size: 0.85rem;
 }
 
 .sort-controls select {
-	background-color: #333;
+	background-color: transparent;
 	color: #fff;
-	border: 1px solid #555;
-	padding: 5px 10px;
-	border-radius: 4px;
+	border: none;
+	border-bottom: 1px solid #fff;
+	padding: 1px 4px;
+	border-radius: 0;
 	font-family: inherit;
+	outline: none;
+}
+
+.sort-controls select:focus {
+	outline: none;
+	border: none;
+	border-bottom: 1px solid #fff;
+}
+
+.sort-controls select option {
+	background-color: #000;
+	color: #fff;
+	border: none;
+	outline: none;
+	box-shadow: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
 }
 
 /* 回覆功能樣式 */
