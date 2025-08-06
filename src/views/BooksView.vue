@@ -117,14 +117,14 @@
 </template>
 
 <script>
-import bookService from "../services/bookService"
-import recordService from "../services/recordService"
+import bookService from '../services/bookService'
+import recordService from '../services/recordService'
 
 export default {
-	name: "BooksView",
+	name: 'BooksView',
 	data() {
 		return {
-			booksData: "",
+			booksData: '',
 			booksKey: [],
 			selectedBook: null,
 			selectedBookIndex: null,
@@ -149,7 +149,7 @@ export default {
 		},
 	},
 	watch: {
-		"$route.query.bookId": {
+		'$route.query.bookId': {
 			handler(newBookId) {
 				if (newBookId) {
 					this.openBookDetails(newBookId)
@@ -173,7 +173,7 @@ export default {
 			const bookItem = this.$refs[`bookItem-${index}`][0] // Get the DOM element
 			if (bookItem) {
 				bookItem.scrollIntoView({
-					behavior: "smooth",
+					behavior: 'smooth',
 				})
 			}
 		},
@@ -184,10 +184,10 @@ export default {
 			this.scrollToItem(this.selectedBookIndex)
 		},
 		checkLoginStatus() {
-			const savedUser = localStorage.getItem("currentUser")
-			const savedLoginStatus = localStorage.getItem("isLoggedIn")
+			const savedUser = localStorage.getItem('currentUser')
+			const savedLoginStatus = localStorage.getItem('isLoggedIn')
 
-			if (savedUser && savedLoginStatus === "true") {
+			if (savedUser && savedLoginStatus === 'true') {
 				this.isLoggedIn = true
 				this.currentUser = JSON.parse(savedUser)
 			}
@@ -209,19 +209,19 @@ export default {
 						this.scrollToSelectedItem()
 					})
 				} else {
-					console.warn("找不到指定的書籍:", bookId)
+					console.warn('找不到指定的書籍:', bookId)
 				}
 			}
 		},
 		async borrowBook() {
 			if (!this.isLoggedIn || !this.currentUser) {
-				alert("請先登入才能借閱書籍")
-				this.$router.push("/join-us")
+				alert('請先登入才能借閱書籍')
+				this.$router.push('/join-us')
 				return
 			}
 
-			if (this.selectedBook.borrow !== "0") {
-				alert("此書已被借出")
+			if (this.selectedBook.borrow !== '0') {
+				alert('此書已被借出')
 				return
 			}
 
@@ -232,9 +232,9 @@ export default {
 					userId: this.currentUser._id, // 使用 _id 而不是 email
 					userName: this.currentUser.name,
 					bookTitle: this.selectedBook.title,
-					borrowDate: new Date().toISOString().split("T")[0], // YYYY-MM-DD
+					borrowDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
 					returnDate: null,
-					status: "borrowed",
+					status: 'borrowed',
 				}
 
 				// 發送借閱記錄到 records 集合
@@ -255,20 +255,20 @@ export default {
 				// 更新選中的書籍
 				this.selectedBook.borrow = this.currentUser._id
 
-				alert("借閱成功！")
+				alert('借閱成功！')
 			} catch (error) {
-				console.error("借閱失敗:", error)
-				alert("借閱失敗，請稍後再試")
+				console.error('借閱失敗:', error)
+				alert('借閱失敗，請稍後再試')
 			}
 		},
 		async returnBook() {
 			if (!this.isLoggedIn || !this.currentUser) {
-				alert("請先登入才能歸還書籍")
+				alert('請先登入才能歸還書籍')
 				return
 			}
 
 			if (this.selectedBook.borrow !== this.currentUser._id) {
-				alert("您沒有借閱此書")
+				alert('您沒有借閱此書')
 				return
 			}
 
@@ -279,21 +279,21 @@ export default {
 					(record) =>
 						record.bookId === this.selectedBook.isbn &&
 						record.userId === this.currentUser._id &&
-						record.status === "borrowed"
+						record.status === 'borrowed'
 				)
 
 				if (borrowRecord) {
 					// 更新借閱記錄狀態
 					await recordService.updateRecord(borrowRecord._id, {
-						returnDate: new Date().toISOString().split("T")[0],
-						status: "returned",
+						returnDate: new Date().toISOString().split('T')[0],
+						status: 'returned',
 					})
 				}
 
 				// 更新書籍狀態為可借閱
 				var updatedBook = {
 					// ...this.selectedBook,
-					borrow: "0",
+					borrow: '0',
 				}
 
 				await bookService.postBook(this.selectedBook._id, updatedBook)
@@ -303,12 +303,12 @@ export default {
 				this.booksKey = Object.keys(this.booksData)
 
 				// 更新選中的書籍
-				this.selectedBook.borrow = "0"
+				this.selectedBook.borrow = '0'
 
-				alert("歸還成功！")
+				alert('歸還成功！')
 			} catch (error) {
-				console.error("歸還失敗:", error)
-				alert("歸還失敗，請稍後再試")
+				console.error('歸還失敗:', error)
+				alert('歸還失敗，請稍後再試')
 			}
 		},
 	},
@@ -317,7 +317,7 @@ export default {
 		this.booksData = await bookService.allBooks()
 		this.booksKey = Object.keys(this.booksData)
 		this.updateContainerWidth()
-		window.addEventListener("resize", this.updateContainerWidth)
+		window.addEventListener('resize', this.updateContainerWidth)
 
 		// 檢查是否有從路由傳入的書籍 ID（在書籍資料載入後）
 		if (this.$route.query.bookId) {
@@ -327,7 +327,7 @@ export default {
 		}
 	},
 	beforeUnmount() {
-		window.removeEventListener("resize", this.updateContainerWidth)
+		window.removeEventListener('resize', this.updateContainerWidth)
 	},
 }
 </script>
@@ -381,7 +381,7 @@ button {
 	display: grid;
 	grid-template-columns: 1fr;
 	grid-template-rows: 80% 20%;
-	background: rgba(255, 255, 255, 0.2);
+	background: #333;
 	padding: 1vw;
 	text-align: center;
 	box-shadow: 0 0.3vw 0.6vw rgba(0, 0, 0, 0.1);
@@ -441,7 +441,7 @@ button {
 	width: 30%;
 	height: 100%;
 	/* background: rgba(211, 211, 211, 1); */
-	background: rgba(255, 255, 255, 0.2);
+	background: #333;
 	box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
 	overflow-y: auto;
 	z-index: 10;
@@ -515,7 +515,7 @@ p {
 	border: 1px solid #ffffff;
 	text-decoration: none;
 	border-radius: 25px;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 14px;
 	font-weight: 500;
 	text-align: center;
@@ -535,7 +535,7 @@ p {
 	width: 90%;
 	border: 1px solid #ddd;
 	border-radius: 25px;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 14px;
 	position: relative;
 	left: 50%;
@@ -549,7 +549,7 @@ p {
 	color: rgb(255, 255, 255);
 	/* border: 1px solid black; */
 	border-radius: 25px;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 14px;
 	font-weight: 500;
 	cursor: pointer;
@@ -578,7 +578,7 @@ p {
 	color: rgb(255, 255, 255);
 	border: 1px solid #ffffff;
 	border-radius: 25px;
-	font-family: "JetBrains Mono";
+	font-family: 'JetBrains Mono';
 	font-size: 14px;
 	font-weight: 500;
 	cursor: pointer;
@@ -640,10 +640,10 @@ p {
 		transform: translate(-50%, -50%); /* Center the panel */
 		width: 90%; /* Almost full width */
 		max-height: 90vh; /* Limit height */
-		background: rgba(211, 211, 211, 0.95); /* Semi-transparent background */
 		border-radius: 10px; /* Rounded corners */
-		box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Stronger shadow for depth */
-		z-index: 100; /* Higher z-index to ensure it’s on top */
+		box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+		background-color: rgba(51, 51, 51, 0.9);
+		z-index: 1000; /* Higher z-index to ensure it’s on top */
 	}
 	.details-slide-enter-from,
 	.details-slide-leave-to {

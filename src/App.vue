@@ -149,12 +149,16 @@ body {
 	.Right_Line {
 		display: none;
 	}
+	.Bottom_Line{
+		bottom: 20px;
+	}
 	.RouterView_Container {
 		left: 0;
 		right: 0;
 	}
 	.RouterView_Container {
 		top: 62px;
+		bottom: 20px;
 	}
 }
 </style>
