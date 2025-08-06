@@ -2,6 +2,19 @@
 	<div class="handleScroll">
 		<div class="grid-container" id="split-container">
 			<section id="bookshelf">
+				<!-- 搜尋功能 -->
+				<div class="search-container">
+					<input
+						type="text"
+						v-model="searchQuery"
+						placeholder="Search books, authors, publishers..."
+						class="search-input"
+					/>
+					<div v-if="searchQuery" class="search-clear" @click="clearSearch">
+						×
+					</div>
+				</div>
+				
 				<div class="books-container" ref="container">
 					<div
 						class="grid-wrapper"
@@ -14,7 +27,7 @@
 						>
 							<button
 								class="product-card"
-								v-for="(book, index) in booksData"
+								v-for="(book, index) in filteredBooks"
 								:key="index"
 								:ref="`bookItem-${index}`"
 								@click="selectBook(book, index)"
@@ -132,9 +145,34 @@ export default {
 			containerWidth: 0,
 			currentUser: null,
 			isLoggedIn: false,
+			searchQuery: '',
 		}
 	},
 	computed: {
+		filteredBooks() {
+			if (!this.booksData || !this.searchQuery.trim()) {
+				return this.booksData
+			}
+			
+			const query = this.searchQuery.toLowerCase().trim()
+			const filtered = {}
+			
+			Object.keys(this.booksData).forEach(key => {
+				const book = this.booksData[key]
+				const searchText = [
+					book.title,
+					book.author,
+					book.publisher,
+					book.place
+				].join(' ').toLowerCase()
+				
+				if (searchText.includes(query)) {
+					filtered[key] = book
+				}
+			})
+			
+			return filtered
+		},
 		gridColumns() {
 			const imageWidth = this.containerWidth > 768 ? 250 : 200 // Fixed image width
 			const gap = this.containerWidth * 0.02 // Gap between images
@@ -179,6 +217,9 @@ export default {
 		},
 		closeDetails() {
 			this.selectedBook = null
+		},
+		clearSearch() {
+			this.searchQuery = ''
 		},
 		scrollToSelectedItem() {
 			this.scrollToItem(this.selectedBookIndex)
@@ -354,6 +395,60 @@ body {
 	flex-direction: column;
 	overflow: hidden;
 	width: 100%;
+}
+
+/* 搜尋功能樣式 */
+.search-container {
+	position: relative;
+	width: 100%;
+	max-width: 500px;
+	margin: 0 auto 0 auto;
+	padding: 0px 20px;
+}
+
+.search-input {
+	width: 100%;
+	padding: 12px 16px;
+	border: 1px solid #ffffff;
+	border-radius: 25px;
+	background: transparent;
+	color: #ffffff;
+	font-family: 'JetBrains Mono';
+	font-size: 16px;
+	outline: none;
+	transition: all 0.3s ease;
+	box-sizing: border-box;
+}
+
+.search-input::placeholder {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.search-input:focus {
+	background: rgba(255, 255, 255, 0.2);
+	box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.search-clear {
+	position: absolute;
+	right: 30px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 24px;
+	height: 24px;
+	background: rgba(255, 255, 255, 0.3);
+	color: #ffffff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	font-size: 16px;
+	transition: background 0.3s ease;
+}
+
+.search-clear:hover {
+	background: rgba(255, 255, 255, 0.5);
 }
 .grid-wrapper {
 	width: 100%;
