@@ -100,7 +100,6 @@
 
 								<!-- 未登入時顯示登入提示 -->
 								<div v-else class="login-prompt">
-									<p>請先登入才能借閱書籍</p>
 									<router-link
 										to="/join-us"
 										class="login-link"
@@ -441,7 +440,8 @@ button {
 	right: 0;
 	width: 30%;
 	height: 100%;
-	background: rgba(211, 211, 211, 1);
+	/* background: rgba(211, 211, 211, 1); */
+	background: rgba(255, 255, 255, 0.2);
 	box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
 	overflow-y: auto;
 	z-index: 10;
@@ -458,11 +458,11 @@ button {
 h2 {
 	font-size: 1.5rem;
 	margin: 10px 0;
-	color: #202124;
+	color: #ffffff;
 }
 p {
 	font-size: 1rem;
-	color: #4d5156;
+	color: #ffffff;
 }
 .close-btn {
 	position: absolute;
@@ -471,16 +471,16 @@ p {
 	width: 30px;
 	height: 30px;
 	font-size: 20px;
-	background: #fff;
-	color: black;
+	background: rgba(0, 0, 0, 0.3);
+	color: rgb(255, 255, 255);
 	text-align: center;
-	border: none;
+	border: 1px solid #ffffff;
 	border-radius: 50%;
 	cursor: pointer;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 .close-btn:hover {
-	background: #f1f3f4;
+	transform: scale(1.05);
 }
 /* Add to style section */
 .borrow-section {
@@ -496,36 +496,38 @@ p {
 
 .current-user {
 	font-size: 0.9rem;
-	color: #666;
+	color: #ffffff;
 	margin: 0;
 }
 
 .login-prompt {
-	margin-top: 20px;
 	text-align: center;
-	padding: 15px;
-	background: rgba(245, 166, 35, 0.1);
-	border-radius: 8px;
-}
-
-.login-prompt p {
-	margin: 0 0 10px 0;
-	color: #666;
+	padding: 10px;
+	background: transparent;
 }
 
 .login-link {
 	display: inline-block;
-	padding: 8px 16px;
-	background-color: #f5a623;
-	color: white;
+	width: 90%;
+	padding: 10px;
+	background: transparent;
+	color: rgb(255, 255, 255);
+	border: 1px solid #ffffff;
 	text-decoration: none;
-	border-radius: 20px;
-	font-size: 0.9rem;
-	transition: background-color 0.3s;
+	border-radius: 25px;
+	font-family: "JetBrains Mono";
+	font-size: 14px;
+	font-weight: 500;
+	text-align: center;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+	transition: background-color 0.3s, transform 0.1s ease, box-shadow 0.3s;
 }
 
 .login-link:hover {
-	background-color: #e69520;
+	transform: translateX(-50%) scale(1.02);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .user-id-input {
@@ -543,9 +545,9 @@ p {
 .borrow-btn {
 	width: 90%; /* Slightly less than half to account for spacing */
 	padding: 10px;
-	background-color: #f5a623;
-	color: white;
-	border: none;
+	background: transparent;
+	color: rgb(255, 255, 255);
+	/* border: 1px solid black; */
 	border-radius: 25px;
 	font-family: "JetBrains Mono";
 	font-size: 14px;
@@ -555,11 +557,13 @@ p {
 	position: relative;
 	left: 50%;
 	transform: translateX(-50%);
-	transition: background-color 0.3s;
+	border: 1px solid #ffffff;
+	transition: background-color 0.3s, transform 0.1s ease, box-shadow 0.3s;
 }
 
 .borrow-btn:hover:not(:disabled) {
-	background-color: #e69520;
+	transform: translateX(-50%) scale(1.02);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .borrow-btn:disabled {
@@ -570,9 +574,9 @@ p {
 .return-btn {
 	width: 90%;
 	padding: 10px;
-	background-color: #28a745;
-	color: white;
-	border: none;
+	background: transparent;
+	color: rgb(255, 255, 255);
+	border: 1px solid #ffffff;
 	border-radius: 25px;
 	font-family: "JetBrains Mono";
 	font-size: 14px;
@@ -582,11 +586,12 @@ p {
 	position: relative;
 	left: 50%;
 	transform: translateX(-50%);
-	transition: background-color 0.3s;
+	transition: background-color 0.3s, transform 0.1s ease, box-shadow 0.3s;
 }
 
 .return-btn:hover {
-	background-color: #218838;
+	transform: translateX(-50%) scale(1.02);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Adjust mobile styles */

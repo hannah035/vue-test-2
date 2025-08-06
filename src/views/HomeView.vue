@@ -295,7 +295,7 @@ export default {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	overflow-y: auto;
-	padding-right: 10px;
+	/* padding-right: 10px; */
 }
 
 .announcement-date {
@@ -454,7 +454,7 @@ export default {
 		font-size: 1rem;
 		line-height: 1.6;
 		margin-bottom: 50px;
-		padding-right: 5px;
+		/* padding-right: 5px; */
 	}
 
 	.announcement-date {
