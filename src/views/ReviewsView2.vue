@@ -348,7 +348,6 @@
 					</button>
 					<!-- 新增評論表單 (在按鈕下方顯示) -->
 					<div v-if="showReplyForm && isLoggedIn" class="reply-form">
-						<h4>Reply to this review</h4>
 
 						<div class="textarea-container">
 							<textarea
@@ -463,7 +462,28 @@
 						@click="toggleReviewForm"
 						v-if="isLoggedIn"
 					>
-						{{ showReviewForm ? '✕' : 'Add Review' }}
+						<svg
+							v-if="!showReviewForm"
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 16 16"
+							fill="none"
+						>
+							<path
+								d="M8 1V15"
+								stroke="white"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+							<path
+								d="M1 8H15"
+								stroke="white"
+								stroke-width="2"
+								stroke-linecap="round"
+							/>
+						</svg>
+						<span v-if="showReviewForm">✕</span>
 					</button>
 				</div>
 			</div>
@@ -1153,8 +1173,8 @@ export default {
 	/* 子元素垂直排列 */
 	gap: 15px;
 	/* 子元素間距 15px，比主內容區稍小 */
-	padding: 20px;
-	/* 內部留白 20px */
+	padding: 0px 45px 0px 0px;
+	/* 內部留白：上下 20px，右側 20px */
 	overflow-y: auto;
 	/* 內容溢出時顯示垂直捲軸 */
 	overflow-x: hidden;
@@ -1185,9 +1205,9 @@ export default {
 	/* 子元素間距 8px */
 	padding: 15px;
 	padding-bottom: 0%;
-	padding-top: 5px;
+	padding-top: 10px;
 	/* 內部留白 10px，比其他區域稍小 */
-	border-top: 1px solid #333;
+	border-top: 1px solid #ffffff;
 	/* 頂部邊框線，與上方內容分隔 */
 	/* 與其他區域相同的邊框樣式 */
 }
@@ -1430,15 +1450,11 @@ export default {
 
 /* 單個評論項目 */
 .comment-item {
-	/* background-color: #111; */
-	/* 深色背景，比主背景稍亮 */
-	border-radius: 8px;
-	/* 圓角 8px，柔化邊緣 */
 	padding: 15px 20px;
 	/* 上下15px，左右20px內邊距，避免內容貼邊 */
 	position: relative;
 	/* 相對定位，為回覆箭頭提供基準 */
-	/* border: 1px solid #333; */
+	/* border: 1px solid #ffffff; */
 	/* 邊框與其他元素保持一致 */
 	/* width: 100%;
 	使用100%寬度，讓box-sizing處理padding */
@@ -1452,6 +1468,9 @@ export default {
 	/* 隱藏任何溢出的內容，確保不會跑出邊界 */
 	word-wrap: break-word;
 	/* 強制長單詞換行，處理新增評論的長文字 */
+	margin-bottom: 12px;
+	padding: 15px;
+	background-color: #343434;
 }
 
 /* 評論標題區域 */
@@ -1503,8 +1522,8 @@ export default {
 
 /* 評論操作區域 */
 .comment-actions {
-	margin-top: 8px;
-	/* 頂部留白，與內容分離 */
+	/* margin-top: 8px;
+	頂部留白，與內容分離 */
 	display: flex;
 	/* 使用 Flexbox 布局 */
 	justify-content: flex-end;
@@ -1572,6 +1591,7 @@ export default {
 	/* 平滑過渡動畫 */
 	padding: 0;
 	/* 移除內邊距 */
+	margin-bottom: 100px;
 	position: relative;
 	left: 50%;
 	transform: translateX(-50%);
@@ -1603,25 +1623,30 @@ export default {
 }
 
 .add-review-btn {
-	background-color: #007acc;
-	border: 1px solid #0056b3;
+	background-color: transparent;
+	/* border: 1px solid #0056b3; */
 	color: #fff;
-	padding: 12px 20px;
-	border-radius: 6px;
+	padding: 8px;
+	border-radius: 4px;
 	font-size: 14px;
 	cursor: pointer;
 	transition: background-color 0.3s;
-	
-	width: 200px;
-	/* 固定寬度，避免過寬 */
 	align-self: flex-end;
 	/* 靠右對齊 */
 	margin-left: auto;
 	/* 讓按鈕推到容器最右側 */
+	display: flex;
+	/* 使用 Flexbox 布局 */
+	align-items: center;
+	/* 垂直置中對齊 */
+	justify-content: center;
+	/* 水平置中對齊 */
+	border: none;
+	/* 移除邊框 */
 }
 
 .add-review-btn:hover {
-	background-color: #0056b3;
+	background-color: #333;
 }
 
 .add-review-form {
@@ -1831,6 +1856,8 @@ export default {
 	align-items: center;
 	gap: 10px;
 	padding-left: 10px;
+	padding-bottom: 10px;
+	padding-top: 5px;
 }
 
 .results-info {
@@ -1922,14 +1949,15 @@ export default {
 }
 
 .reply-form {
-	background-color: #2a2a2a;
+	background-color: #000000;
+	border: 1px solid #ffffff;
 	border-radius: 8px;
 	width: 100%;
 	/* 確保表單佔滿寬度 */
 	align-self: stretch;
 	/* 確保表單在置中容器中仍然伸展 */
 	box-sizing: border-box;
-	padding: 15px;
+	/* padding: 15px; */
 }
 
 .reply-form.small {
@@ -1948,10 +1976,14 @@ export default {
 	font-size: 16px;
 }
 .textarea-container {
+	background-color: transparent;
 	width: 100%;
 	height: min-content;
 	padding: 0;
 	position: relative;
+	background-color: transparent;
+	border: none;
+	outline: none;
 }
 .textarea-container button {
 	position: absolute;
@@ -1969,9 +2001,9 @@ export default {
 	width: 100%;
 	min-height: 120px;
 
-	background-color: #333;
+	background-color: transparent;
 	color: #fff;
-	border: 1px solid #555;
+	border: none;
 	border-radius: 4px;
 	padding: 10px;
 	font-family: inherit;
@@ -2042,18 +2074,11 @@ export default {
 	font-size: 18px;
 }
 
-.comment-item {
-	margin-bottom: 20px;
-	padding: 15px;
-	background-color: #2a2a2a;
-	border-radius: 8px;
-}
-
 .comment-header {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	margin-bottom: 10px;
+	margin-bottom: 3px;
 }
 
 .comment-author {
@@ -2082,12 +2107,12 @@ export default {
 
 .replies-section {
 	margin-top: 10px;
-	border-left: 2px solid #555;
+	border-left: 1px solid #ffffff;
 }
 
 .reply-item {
-	margin-bottom: 20px;
-	margin-left: 20px;
+	margin-bottom: 0px;
+	margin-left: 15px;
 }
 
 .reply-header {
@@ -2095,7 +2120,7 @@ export default {
 	flex-direction: column;
 	align-items: flex-start;
 	text-align: left;
-	margin-bottom: 8px;
+	margin-bottom: 3px;
 }
 
 .reply-author {
@@ -2109,7 +2134,7 @@ export default {
 }
 
 .reply-content {
-	color: #bbb;
+	color: #ffffff;
 	line-height: 1.4;
 	font-size: 1rem;
 	word-wrap: break-word;
