@@ -1,20 +1,20 @@
 <template>
 	<div class="handleScroll">
+		<div class="search-container">
+			<input
+				type="text"
+				v-model="searchQuery"
+				placeholder="Search books, authors, publishers..."
+				class="search-input"
+			/>
+			<div v-if="searchQuery" class="search-clear" @click="clearSearch">
+				×
+			</div>
+		</div>
 		<div class="grid-container" id="split-container">
 			<section id="bookshelf">
 				<!-- 搜尋功能 -->
-				<div class="search-container">
-					<input
-						type="text"
-						v-model="searchQuery"
-						placeholder="Search books, authors, publishers..."
-						class="search-input"
-					/>
-					<div v-if="searchQuery" class="search-clear" @click="clearSearch">
-						×
-					</div>
-				</div>
-				
+
 				<div class="books-container" ref="container">
 					<div
 						class="grid-wrapper"
@@ -153,24 +153,26 @@ export default {
 			if (!this.booksData || !this.searchQuery.trim()) {
 				return this.booksData
 			}
-			
+
 			const query = this.searchQuery.toLowerCase().trim()
 			const filtered = {}
-			
-			Object.keys(this.booksData).forEach(key => {
+
+			Object.keys(this.booksData).forEach((key) => {
 				const book = this.booksData[key]
 				const searchText = [
 					book.title,
 					book.author,
 					book.publisher,
-					book.place
-				].join(' ').toLowerCase()
-				
+					book.place,
+				]
+					.join(' ')
+					.toLowerCase()
+
 				if (searchText.includes(query)) {
 					filtered[key] = book
 				}
 			})
-			
+
 			return filtered
 		},
 		gridColumns() {
@@ -399,11 +401,30 @@ body {
 
 /* 搜尋功能樣式 */
 .search-container {
-	position: relative;
-	width: 100%;
-	max-width: 500px;
+	position: absolute;
+	left: 0%;
+	top: 15px;
+	/* transform: translateX(-50%); */
+	z-index: 20;
 	margin: 0 auto 0 auto;
 	padding: 0px 20px;
+	/* background-color: rgba(51,51,51, 0.8); */
+	backdrop-filter: blur(10px);
+}
+.search-container input {
+	width: 100px;
+	padding: 10px 20px;
+	border-radius: 25px;
+	border: 1px solid #ffffff;
+	background-color: rgba(255, 255, 255, 0.1);
+	color: #ffffff;
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 16px;
+	transition: width 0.3s ease;
+	box-sizing: border-box;
+}
+.search-container input:focus {
+	width: 400px;
 }
 
 .search-input {
