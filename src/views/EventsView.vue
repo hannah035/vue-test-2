@@ -35,8 +35,17 @@
 						id="dropdown-button"
 					>
 						{{ selectedPeriod }}
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-							<path d="M11.8079 14.7695L8.09346 10.3121C7.65924 9.79109 8.02976 9 8.70803 9L15.292 9C15.9702 9 16.3408 9.79108 15.9065 10.3121L12.1921 14.7695C12.0921 14.8895 11.9079 14.8895 11.8079 14.7695Z" fill="white"/>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+						>
+							<path
+								d="M11.8079 14.7695L8.09346 10.3121C7.65924 9.79109 8.02976 9 8.70803 9L15.292 9C15.9702 9 16.3408 9.79108 15.9065 10.3121L12.1921 14.7695C12.0921 14.8895 11.9079 14.8895 11.8079 14.7695Z"
+								fill="white"
+							/>
 						</svg>
 					</button>
 					<div class="dropdown-content" id="dropdown-content">
@@ -49,6 +58,15 @@
 							{{ period }}
 						</div>
 					</div>
+				</div>
+				<div class="period-switcher">
+					<button @click="prevPeriod" class="period-button">
+						&#8249;
+					</button>
+					{{ selectedPeriod }}
+					<button @click="nextPeriod" class="period-button">
+						&#8250;
+					</button>
 				</div>
 			</div>
 			<div class="picker-container" ref="pickerContainer">
@@ -192,6 +210,19 @@ p {
 	width: 100%;
 	/* background-color: green; */
 }
+.period-switcher {
+	display: none;
+	font-size: 0.85rem;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, 50%);
+	background-color: black;
+	color: white;
+	border-radius: 5px;
+	gap: 15px;
+	cursor: pointer;
+}
 .dropdown-button {
 	width: 100%;
 	background-color: transparent;
@@ -305,8 +336,8 @@ p {
 @media (max-width: 768px) {
 	.container {
 		grid-template-columns: 1fr;
-		grid-template-rows: 20% 1fr;
-		grid-template-areas: "right" "left";
+		grid-template-rows: 5% 1fr;
+		grid-template-areas: 'right' 'left';
 	}
 	.left-container {
 		width: 100%;
@@ -314,36 +345,42 @@ p {
 		grid-area: left;
 		overflow-y: scroll;
 	}
+	.background-card {
+		height: 90%;
+	}
 	.right-container {
 		position: relative;
 		grid-area: right;
 		width: 100%;
-		
+		height: 100%;
 	}
-	.picker-container{
-		display:none;
+	.picker-container {
+		display: none;
 	}
-	
+
 	/* 手機版字體大小調整 */
 	.title-text {
 		font-size: 1.1rem;
 		height: 30px;
 		padding-top: 10px;
 	}
-	
+
 	.content-text {
 		font-size: 0.85rem;
 		line-height: 1rem;
 	}
-	
+
 	.dropdown-button {
 		font-size: 0.85rem;
 	}
-	
-	.period-dropdown .dropdown-content {
-		font-size: 0.85rem;
+
+	.period-dropdown {
+		display: none;
 	}
-	
+	.period-switcher {
+		display: flex;
+	}
+
 	.picker {
 		font-size: 0.85rem;
 	}
@@ -616,6 +653,24 @@ export default {
 				]
 			}
 		}
+		const prevPeriod = () => {
+			const currentIndex = timePeriodList.value.indexOf(
+				selectedPeriod.value
+			)
+			if (currentIndex > 0) {
+				selectedPeriod.value = timePeriodList.value[currentIndex - 1]
+				updateSectionsByPeriod(selectedPeriod.value)
+			}
+		}
+		const nextPeriod = () => {
+			const currentIndex = timePeriodList.value.indexOf(
+				selectedPeriod.value
+			)
+			if (currentIndex < timePeriodList.value.length - 1) {
+				selectedPeriod.value = timePeriodList.value[currentIndex + 1]
+				updateSectionsByPeriod(selectedPeriod.value)
+			}
+		}
 
 		onMounted(() => {
 			fetchEventsData()
@@ -644,6 +699,8 @@ export default {
 			selectedPeriod,
 			toggleDropdown,
 			selectPeriod,
+			nextPeriod,
+			prevPeriod,
 		}
 	},
 }

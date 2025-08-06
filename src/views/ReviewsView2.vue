@@ -37,8 +37,21 @@
 				:disabled="submittingReview"
 			></textarea>
 		</div>
+
 		<div class="form-group">
 			<label>Tags (comma separated):</label>
+			<div class="tags-container">
+				<div
+					v-for="tag in tags"
+					:key="tag"
+					class="tag-selector"
+					:class="{ active: newReview.tags.includes(tag) }"
+					@click="newReviewToggleTag(tag)"
+				>
+					<span class="tag-text">#{{ tag }}</span>
+				</div>
+			</div>
+
 			<input
 				v-model="newReview.tagsInput"
 				type="text"
@@ -348,7 +361,6 @@
 					</button>
 					<!-- 新增評論表單 (在按鈕下方顯示) -->
 					<div v-if="showReplyForm && isLoggedIn" class="reply-form">
-
 						<div class="textarea-container">
 							<textarea
 								v-model="commentContent"
@@ -443,7 +455,10 @@
 
 					<div class="sort-controls">
 						<select v-model="sortBy" @change="sortReviews">
-							<option value="date">Date</option>
+							<option value="date-desc">Date far to near</option>
+							<option value="date-asc" selected>
+								Date near to far
+							</option>
 							<option value="title">Title</option>
 							<option value="rating">Rating</option>
 						</select>
@@ -504,7 +519,7 @@ export default {
 	data() {
 		return {
 			currentIndex: 0,
-			sortBy: 'date',
+			sortBy: 'date-asc',
 			tags: [],
 			selectedTags: [], // 选中的标签
 			reviews: [],
@@ -586,6 +601,9 @@ export default {
 				if (this.currentIndex >= newVal.length) {
 					this.currentIndex = Math.max(0, newVal.length - 1)
 				}
+				// call sortReviews to ensure the reviews are sorted after filtering
+				this.sortReviews()
+				
 			},
 			immediate: true,
 		},
@@ -646,6 +664,28 @@ export default {
 			// 由于使用了 watcher，这里可以简化
 			this.currentIndex = 0
 		},
+		sortReviews() {
+			switch (this.sortBy) {
+				case 'date-desc':
+					this.reviews.sort(
+						(a, b) => new Date(a.date) - new Date(b.date)
+					)
+					break
+				case 'date-asc':
+					this.reviews.sort(
+						(a, b) => new Date(b.date) - new Date(a.date)
+					)
+					break
+				case 'title':
+					this.reviews.sort((a, b) => a.title.localeCompare(b.title))
+					break
+				case 'rating':
+					this.reviews.sort((a, b) => b.rating - a.rating)
+					break
+			}
+			this.currentIndex = 0
+			console.log('Reviews sorted by:', this.sortBy)
+		},
 
 		// 切换标签选择
 		toggleTag(tag) {
@@ -654,6 +694,15 @@ export default {
 				this.selectedTags.splice(index, 1)
 			} else {
 				this.selectedTags.push(tag)
+			}
+		},
+
+		newReviewToggleTag(tag) {
+			const index = this.newReview.tags.indexOf(tag)
+			if (index > -1) {
+				this.newReview.tags.splice(index, 1)
+			} else {
+				this.newReview.tags.push(tag)
 			}
 		},
 
@@ -707,23 +756,6 @@ export default {
 
 		selectReview(index) {
 			this.currentIndex = index
-		},
-
-		sortReviews() {
-			switch (this.sortBy) {
-				case 'date':
-					this.reviews.sort(
-						(a, b) => new Date(b.date) - new Date(a.date)
-					)
-					break
-				case 'title':
-					this.reviews.sort((a, b) => a.title.localeCompare(b.title))
-					break
-				case 'rating':
-					this.reviews.sort((a, b) => b.rating - a.rating)
-					break
-			}
-			this.currentIndex = 0
 		},
 
 		// 切換回覆評論表單
@@ -1010,12 +1042,13 @@ export default {
 
 			try {
 				this.submittingReview = true
-
 				// 處理標籤
-				const tags = this.newReview.tagsInput
+				let tags = this.newReview.tagsInput
 					.split(',')
 					.map((tag) => tag.trim())
 					.filter((tag) => tag.length > 0)
+				tags = tags.concat(this.newReview.tags)
+				tags = Array.from(new Set(tags)) // 去重
 
 				const reviewData = {
 					userId: this.currentUser._id,
@@ -1373,13 +1406,13 @@ export default {
 	/* 垂直置中 */
 	transform: translateY(-50%);
 	/* 精確的垂直置中對齊 */
-	/* background-color: rgba(255, 255, 255, 0.1); */
+	/* background-color: rgba(255, 255, 255, 0.2); */
 	/* 半透明白色背景 */
 	border: none;
 	/* 移除預設邊框 */
 	color: #fff;
 	/* 白色文字/圖標 */
-	font-size: 16px;
+	font-size: 20px;
 	/* 箭頭大小 */
 	width: 50px;
 	/* 圓形按鈕寬度 */
@@ -1401,7 +1434,7 @@ export default {
 	/* background-color: rgba(255, 255, 255, 0.2); */
 	/* 懸停時背景更亮 */
 	transform: translateY(-50%) scale(1.1);
-	font-size: 18px;
+	font-size: 22px;
 	/* 懸停時稍微放大 */
 }
 
@@ -1652,9 +1685,10 @@ export default {
 .add-review-form {
 	margin-top: 15px;
 	padding: 20px;
-	background-color: #1a1a1a;
+	/* background-color: #1a1a1a; */
+	background-color: #000;
 	border-radius: 8px;
-	border: 1px solid #333;
+	border: 1px solid #fff;
 	position: absolute;
 	z-index: 1001;
 	width: 40%;
@@ -1700,6 +1734,7 @@ export default {
 	background-color: #333;
 	color: #fff;
 	border: 1px solid #555;
+	border: none;
 	border-radius: 4px;
 	padding: 10px 12px;
 	font-family: inherit;
@@ -1759,7 +1794,7 @@ export default {
 
 .star-input:hover,
 .star-input.active {
-	color: #ffd700;
+	color: #fff;
 }
 
 .login-prompt {
@@ -1961,6 +1996,7 @@ export default {
 }
 
 .reply-form.small {
+	background-color: #333;
 	margin-top: 10px;
 	padding: 0px;
 }
@@ -1976,12 +2012,11 @@ export default {
 	font-size: 16px;
 }
 .textarea-container {
-	background-color: transparent;
+	/* background-color: var(--card-color); */
 	width: 100%;
 	height: min-content;
 	padding: 0;
 	position: relative;
-	background-color: transparent;
 	border: none;
 	outline: none;
 }
@@ -1999,17 +2034,21 @@ export default {
 
 .reply-textarea {
 	width: 100%;
+	height: 100%;
 	min-height: 120px;
-
 	background-color: transparent;
 	color: #fff;
 	border: none;
 	border-radius: 4px;
-	padding: 10px;
+	padding: 10px 10px 0 10px;
 	font-family: inherit;
 	font-size: 14px;
 	resize: vertical;
 	box-sizing: border-box;
+	/* bottom: -10px; */
+	position: relative;
+	/* resize: none; */
+	margin: 0;
 }
 
 .reply-textarea:focus {
@@ -2190,7 +2229,12 @@ export default {
 		height: 40px;
 		font-size: 16px;
 	}
-
+	.comments-sidebar {
+		padding: 0 20px;
+	}
+	.bottom-tags {
+		border: none;
+	}
 	/* .nav-left {
 		left: -20px;
 	}
