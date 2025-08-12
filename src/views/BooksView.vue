@@ -4,7 +4,7 @@
 			<input
 				type="text"
 				v-model="searchQuery"
-				placeholder="Search books, authors, publishers..."
+				
 				class="search-input"
 			/>
 			<div v-if="searchQuery" class="search-clear" @click="clearSearch">
@@ -436,7 +436,7 @@ body {
 	color: #ffffff;
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 16px;
-	transition: width 0.3s ease;
+	transition: 0.3s ease;
 	backdrop-filter: blur(10px);
 	box-sizing: border-box;
 }
