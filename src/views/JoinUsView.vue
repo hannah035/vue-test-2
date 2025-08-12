@@ -431,7 +431,7 @@ export default {
 .join-us-container {
 	/* min-height: 100vh; */
 	height: 100%;
-	background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+	/* background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); */
 	/* display: flex;
 	align-items: center;
 	justify-content: center; */
