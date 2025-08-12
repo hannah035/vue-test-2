@@ -20,7 +20,7 @@
 					>
 						<p class="title-text">{{ section.title }}</p>
 						<p class="content-text">{{ section.content }}</p>
-						<img :src="section.image" v-if="section.image"/>
+						<img :src="section.image" v-if="section.image" height="300px"/>
 					</section>
 				</div>
 			</div>
