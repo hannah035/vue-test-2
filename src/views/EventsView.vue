@@ -20,6 +20,7 @@
 					>
 						<p class="title-text">{{ section.title }}</p>
 						<p class="content-text">{{ section.content }}</p>
+						<img :src="section.image" v-if="section.image"/>
 					</section>
 				</div>
 			</div>
@@ -637,8 +638,9 @@ export default {
 				id: index + 1,
 				title: event[1] || `活動 ${index + 1}`, // B欄：標題
 				content: event[2] || '暫無內容', // C欄：內容
+				image: event[3] || '', // D欄：圖片
 			}))
-
+			
 			// 重置選中的 section
 			if (sections.value.length > 0) {
 				activeSection.value = 1
