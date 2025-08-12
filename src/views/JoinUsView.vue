@@ -63,6 +63,11 @@
 						<span v-else>Login</span>
 					</button>
 
+					<!-- Sign Up 文字連結 -->
+					<div class="signup-link-container">
+						<span @click="signUp" class="signup-link">Sign up</span>
+					</div>
+
 					<div v-if="loginError" class="error-message">
 						{{ loginError }}
 					</div>
@@ -313,6 +318,11 @@ export default {
 			localStorage.removeItem('isLoggedIn')
 		},
 
+		signUp() {
+			// 連結到註冊網址
+			window.open('https://www.google.com', '_blank')
+		},
+
 		checkLoginStatus() {
 			const savedUser = localStorage.getItem('currentUser')
 			const savedLoginStatus = localStorage.getItem('isLoggedIn')
@@ -533,6 +543,25 @@ export default {
 	opacity: 0.6;
 	cursor: not-allowed;
 	transform: translate(-50%, 0);
+}
+
+.signup-link-container {
+	text-align: center;
+}
+
+.signup-link {
+	color: #fff;
+	text-decoration: underline;
+	cursor: pointer;
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 1rem;
+	font-weight: 400;
+	transition: all 0.3s ease;
+}
+
+.signup-link:hover {
+	color: #ccc;
+	text-decoration: underline;
 }
 
 .spinner {

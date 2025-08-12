@@ -409,7 +409,6 @@ body {
 	margin: 0 auto 0 auto;
 	padding: 0px 20px;
 	/* background-color: rgba(51,51,51, 0.8); */
-	backdrop-filter: blur(10px);
 }
 .search-container input {
 	width: 100px;
@@ -421,6 +420,7 @@ body {
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 16px;
 	transition: width 0.3s ease;
+	backdrop-filter: blur(10px);
 	box-sizing: border-box;
 }
 .search-container input:focus {
