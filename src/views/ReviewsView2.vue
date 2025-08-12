@@ -111,11 +111,6 @@
 			</button>
 		</div>
 	</div>
-
-	<!-- 如果未登入，顯示登入提示 -->
-	<div v-if="!isLoggedIn" class="login-prompt">
-		<p>Login to add comments and reviews</p>
-	</div>
 	<div class="reviews-container">
 		<!-- 載入狀態 -->
 		<div v-if="loading" class="loading-container">
@@ -428,6 +423,11 @@
 				</div>
 
 				<!-- 新增評論按鈕 -->
+				
+				<!-- 如果未登入，顯示登入提示 -->
+				<div v-if="!isLoggedIn" class="login-prompt">
+					<p>Login to add comments and reviews</p>
+				</div>
 			</div>
 
 			<!-- 底部標籤選擇區域 -->
@@ -1806,6 +1806,7 @@ export default {
 
 .login-prompt p {
 	margin: 0;
+	font-size: 14px;
 }
 
 .no-comments {

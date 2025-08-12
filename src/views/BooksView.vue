@@ -437,6 +437,7 @@ body {
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 16px;
 	transition: width 0.3s ease;
+	backdrop-filter: blur(10px);
 	box-sizing: border-box;
 }
 .search-container input:focus {
