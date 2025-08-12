@@ -377,8 +377,8 @@ export default {
 
 <style>
 :root {
-	--search_bar_height: 2vw;
 	--animation-duration: 0.7s;
+	--search_bar_height: 40px;
 }
 a {
 	all: unset;
@@ -409,13 +409,30 @@ body {
 	margin: 0 auto 0 auto;
 	padding: 0px 20px;
 	/* background-color: rgba(51,51,51, 0.8); */
+	/* backdrop-filter: blur(10px); */
+}
+.search-container::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	filter: blur(10px); /* Adjust blur intensity */
+	z-index: -1; /* Places blur behind content */
 }
 .search-container input {
-	width: 100px;
+	width: var(--search_bar_height);
+	height: var(--search_bar_height);
+	border-radius: var(--search_bar_height);
+	background-image: url('../assets/SearchIcon/mag.png');
+	background-position: 5px 5px;
+	background-repeat: no-repeat;
+	background-size: calc(var(--search_bar_height) - 10px)
+		calc(var(--search_bar_height) - 10px);
+	background-color: rgba(51, 51, 51, 0.8);
 	padding: 10px 20px;
-	border-radius: 25px;
 	border: 1px solid #ffffff;
-	background-color: rgba(255, 255, 255, 0.1);
 	color: #ffffff;
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 16px;
@@ -450,27 +467,6 @@ body {
 	box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-.search-clear {
-	position: absolute;
-	right: 30px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 24px;
-	height: 24px;
-	background: rgba(255, 255, 255, 0.3);
-	color: #ffffff;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	font-size: 16px;
-	transition: background 0.3s ease;
-}
-
-.search-clear:hover {
-	background: rgba(255, 255, 255, 0.5);
-}
 .grid-wrapper {
 	width: 100%;
 	height: 100%;
