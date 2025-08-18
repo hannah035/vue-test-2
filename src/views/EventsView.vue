@@ -158,18 +158,20 @@ p {
 .container {
 	display: grid;
 	height: 100%;
+	width: 100%;
 	/* width: 100%; */
 }
 
 .left-container {
 	width: 82%;
 	height: 100%;
+	overflow-y: scroll;
 	/* grid-area: left; */
 }
 
 .background-card {
 	top: 5%;
-	height: 85%;
+	height: 90%;
 	margin-left: 5%;
 	margin-right: 0%;
 	width: 90%;
@@ -414,7 +416,7 @@ export default {
 			)
 			if (sectionElement && contentContainer.value) {
 				contentContainer.value.scrollTo({
-					top: sectionElement.offsetTop + 50,
+					top: sectionElement.offsetTop ,
 					behavior: 'smooth',
 				})
 				activeSection.value = sectionId
