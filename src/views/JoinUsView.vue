@@ -58,14 +58,17 @@
 									/>
 								</circle>
 							</svg>
-						
 						</span>
 						<span v-else>Login</span>
 					</button>
 
 					<!-- Sign Up 文字連結 -->
 					<div class="signup-link-container">
-						<span @click="signUp" class="signup-link">Sign up</span>
+						<a
+							class="signup-link"
+							href="https://docs.google.com/forms/d/e/1FAIpQLSeMnnXu--cvwh0RYvUioM69FyKIxjIBJW8g2FZG3pxGJs2kJA/viewform?fbclid=IwY2xjawMWw8tleHRuA2FlbQIxMQABHjGqGJ2osPSG4FlPhMAgjST4pOwkObfQz5CgSNqGHBM-a8ZM7Hv069R0ISYh_aem_ieCOFmq-kI2oX2ojcveO1w"
+							>Sign up</a
+						>
 					</div>
 
 					<div v-if="loginError" class="error-message">
@@ -535,7 +538,7 @@ export default {
 }
 
 .login-btn:hover:not(:disabled) {
-	transform: translate(-50%,  -2px);
+	transform: translate(-50%, -2px);
 	/* box-shadow: 0 5px 15px ; */
 }
 
@@ -671,7 +674,7 @@ export default {
 	font-family: 'JetBrains Mono', monospace;
 }
 .logout-btn:hover {
-	transform: translate(0,  -2px);
+	transform: translate(0, -2px);
 	/* box-shadow: 0 5px 15px ; */
 }
 
