@@ -426,22 +426,36 @@ body {
 	height: var(--search_bar_height);
 	border-radius: var(--search_bar_height);
 	background-image: url('../assets/SearchIcon/mag.png');
-	background-position: 5px 5px;
+	background-position: center center;
 	background-repeat: no-repeat;
 	background-size: calc(var(--search_bar_height) - 10px)
 		calc(var(--search_bar_height) - 10px);
-	background-color: rgba(51, 51, 51, 0.8);
+	background-color: transparent;
 	padding: 10px 20px;
-	border: 1px solid #ffffff;
-	color: #ffffff;
+	border: none;
+	color: transparent;
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 16px;
-	transition: width 0.3s ease;
-	backdrop-filter: blur(10px);
+	transition: all 0.3s ease;
 	box-sizing: border-box;
+	outline: none;
+}
+
+.search-container input::placeholder {
+	color: transparent;
 }
 .search-container input:focus {
 	width: 400px;
+	background-color: rgba(51, 51, 51, 0.8);
+	border: 1px solid #ffffff;
+	backdrop-filter: blur(10px);
+	background-position: 10px center;
+	padding-left: 40px;
+	color: #ffffff;
+}
+
+.search-container input:focus::placeholder {
+	color: rgba(255, 255, 255, 0.7);
 }
 
 .search-input {
