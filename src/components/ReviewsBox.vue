@@ -9,6 +9,7 @@ import Box from '@/components/Box.vue'
           <Box>
             <h2 class="text-2xl font-bold">For Developers</h2>
             <p class="mt-2 mb-4">
+              
               Browse our Vue jobs and start your career today
             </p>
             <a
