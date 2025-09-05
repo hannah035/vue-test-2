@@ -194,8 +194,9 @@
 				<!-- 評論回覆區域 -->
 				<div
 					v-if="
-						currentReview.comments &&
-						currentReview.comments.length > 0
+						(currentReview.comments &&
+						currentReview.comments.length > 0) ||
+						showReplyForm
 					"
 					class="comments-container"
 				>
@@ -419,11 +420,41 @@
 
 				<!-- 如果沒有評論，顯示無評論提示 -->
 				<div v-else-if="!showReplyForm" class="no-comments">
-					<p>No comments yet</p>
+					<p class="no-comments-text">No comments yet</p>
+
+					<button
+						class="add-comment-btn"
+						@click="toggleReplyForm"
+						v-if="isLoggedIn && !showReplyForm"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="45"
+							height="45"
+							viewBox="0 0 45 45"
+							fill="none"
+						>
+							<path
+								d="M9.625 6.125H35.375C37.308 6.125 38.875 7.692 38.875 9.625V35.375C38.875 37.308 37.308 38.875 35.375 38.875H9.625C7.692 38.875 6.125 37.308 6.125 35.375V9.625C6.125 7.692 7.692 6.125 9.625 6.125Z"
+								stroke="white"
+							/>
+							<path
+								d="M22.5 15L22.5 30"
+								stroke="white"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M30 22.5L15 22.5"
+								stroke="white"
+								stroke-linejoin="round"
+							/>
+						</svg>
+					</button>
+					
 				</div>
 
 				<!-- 新增評論按鈕 -->
-				
+
 				<!-- 如果未登入，顯示登入提示 -->
 				<div v-if="!isLoggedIn" class="login-prompt">
 					<p>Login to add comments and reviews</p>
@@ -603,7 +634,6 @@ export default {
 				}
 				// call sortReviews to ensure the reviews are sorted after filtering
 				this.sortReviews()
-				
 			},
 			immediate: true,
 		},
@@ -1469,8 +1499,6 @@ export default {
 	max-width: 100%;
 	/* 強制限制最大寬度，確保與新增評論格式一致 */
 	box-sizing: border-box;
-	/* 包含任何 padding 在寬度計算內 */
-	overflow: hidden;
 	/* 隱藏任何溢出內容，與新增評論保持一致 */
 	display: flex;
 	/* 使用 Flexbox 布局 */
@@ -1478,7 +1506,7 @@ export default {
 	/* 垂直排列評論項目 */
 	gap: 0;
 	/* 移除間距，讓評論項目緊密排列 */
-	overflow-y: scroll;
+	height: fit-content;
 }
 
 /* 單個評論項目 */
@@ -1819,6 +1847,8 @@ export default {
 .no-comments p {
 	margin: 0;
 	font-size: 14px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 .clear-tags-btn {
@@ -2232,6 +2262,7 @@ export default {
 	}
 	.comments-sidebar {
 		padding: 0 20px;
+		height: fit-content;
 	}
 	.bottom-tags {
 		border: none;
