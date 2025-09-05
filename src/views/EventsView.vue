@@ -131,7 +131,8 @@
 	font-size: 1.5rem;
 	font-weight: 500;
 	color: white;
-	height: 40px;
+	min-height: 40px;
+	height: fit-content;
 	padding-top: 15px;
 	position: sticky;
 	top: 0px;
@@ -364,7 +365,8 @@ p {
 	/* 手機版字體大小調整 */
 	.title-text {
 		font-size: 1.1rem;
-		height: 30px;
+		min-height: 30px;
+		height: fit-content;
 		padding-top: 10px;
 	}
 

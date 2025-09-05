@@ -117,93 +117,118 @@
 						>
 							<div class="format-label">Borrowing</div>
 						</div>
-						<template
-							v-for="(record, index) in borrowedBooks"
-							:key="index"
-						>
+						<template v-if="borrowedBooks.length === 0">
 							<div class="review-card">
 								<div class="review-title">
-									{{ record.bookTitle }}
+									No borrowed books
 								</div>
-
 								<div class="borrow-date-info">
-									<span class="borrow-date"
-										>From:
-										{{
-											formatDate(record.borrowDate)
-										}}</span
-									>
-									<span class="days-borrowed"
-										>Days Borrowed:
-										{{
-											calculateDaysBorrowed(
-												record.borrowDate
-											)
-										}}</span
-									>
-								</div>
-								<div class="return-borrow-button">
-									<div class="book-actions">
-										<router-link
-											:to="{
-												path: '/books',
-												query: {
-													bookId: record.bookId,
-												},
-											}"
-											class="action-link view-book"
-										>
-											Return
-										</router-link>
-									</div>
+									You have no books currently borrowed.
 								</div>
 							</div>
 						</template>
+						<template v-else>
+							<template
+								v-for="(record, index) in borrowedBooks"
+								:key="index"
+							>
+								<div class="review-card">
+									<div class="review-title">
+										{{ record.bookTitle }}
+									</div>
+
+									<div class="borrow-date-info">
+										<span class="borrow-date"
+											>From:
+											{{
+												formatDate(record.borrowDate)
+											}}</span
+										>
+										<span class="days-borrowed"
+											>Days Borrowed:
+											{{
+												calculateDaysBorrowed(
+													record.borrowDate
+												)
+											}}</span
+										>
+									</div>
+									<div class="return-borrow-button">
+										<div class="book-actions">
+											<router-link
+												:to="{
+													path: '/books',
+													query: {
+														bookId: record.bookId,
+													},
+												}"
+												class="action-link view-book"
+											>
+												Return
+											</router-link>
+										</div>
+									</div>
+								</div>
+							</template>
+						</template>
+
 						<div
 							class="work-format"
 							v-bind="setFormatSpan('borrowingHistory')"
 						>
 							<div class="format-label">History</div>
 						</div>
-						<template
-							v-for="(record, index) in borrowingHistory"
-							:key="index"
-						>
+						<template v-if="borrowingHistory.length === 0">
 							<div class="review-card">
 								<div class="review-title">
-									{{ record.bookTitle }}
+									No borrowing history
 								</div>
-
 								<div class="borrow-date-info">
-									<span class="borrow-date"
-										>From:
-										{{
-											formatDate(record.borrowDate)
-										}}</span
-									>
-									<span class="days-borrowed"
-										>To:
-										{{
-											formatDate(record.returnDate)
-										}}</span
-									>
-								</div>
-								<div class="return-borrow-button">
-									<div class="book-actions">
-										<router-link
-											:to="{
-												path: '/books',
-												query: {
-													bookId: record.bookId,
-												},
-											}"
-											class="action-link view-book"
-										>
-											Borrow
-										</router-link>
-									</div>
+									You have no borrowing history.
 								</div>
 							</div>
+						</template>
+						<template v-else>
+							<template
+								v-for="(record, index) in borrowingHistory"
+								:key="index"
+							>
+								<div class="review-card">
+									<div class="review-title">
+										{{ record.bookTitle }}
+									</div>
+
+									<div class="borrow-date-info">
+										<span class="borrow-date"
+											>From:
+											{{
+												formatDate(record.borrowDate)
+											}}</span
+										>
+										<span class="days-borrowed"
+											>To:
+											{{
+												formatDate(record.returnDate)
+											}}</span
+										>
+									</div>
+									<div class="return-borrow-button">
+										<div class="book-actions">
+											<router-link
+												:to="{
+													path: '/books',
+													query: {
+														bookId: record.bookId,
+													},
+												}"
+												class="action-link view-book"
+											>
+												Borrow
+											</router-link>
+										</div>
+									</div>
+								</div>
+							</template>
 						</template>
 					</div>
 				</div>
@@ -399,15 +424,19 @@ export default {
 			attributes['style'] = {
 				'grid-column': `span ${
 					status === 'borrowedBooks'
-						? this.borrowedBooks.length
-						: this.borrowingHistory.length
+						? this.borrowCount.borrowedBooks
+						: this.borrowCount.borrowingHistory
 				}`,
 			}
 			return attributes
 		},
 		countRecords() {
-			this.borrowCount.borrowedBooks = this.borrowedBooks.length
-			this.borrowCount.borrowingHistory = this.borrowingHistory.length
+			this.borrowCount.borrowedBooks = Math.max(this.borrowedBooks.length, 1)
+
+			this.borrowCount.borrowingHistory = Math.max(
+				this.borrowingHistory.length,
+				1
+			)
 			this.totalCount =
 				this.borrowCount.borrowedBooks +
 				this.borrowCount.borrowingHistory
@@ -416,12 +445,11 @@ export default {
 			this.countRecords()
 			const sepLine = document.querySelector('.sep-line')
 			const cardWidth = 200 // 假設每個卡片的寬度為 200px
-			const cardGap = 10 // 假設卡片之間的間距為 10px
+			const cardGap = 20 // 假設卡片之間的間距為 20px
 			const sepLineWidth =
-				(cardWidth + cardGap) * (this.totalCount + 1) - cardGap
-			// 我不知道為什麼要加 1 !!!!!
+				(cardWidth + cardGap) * (this.totalCount ) - cardGap
 
-			sepLine.style.width = `calc(${sepLineWidth}px - 63.2px)`
+			sepLine.style.width = `calc(${sepLineWidth}px)`
 		},
 	},
 	mounted() {
@@ -713,7 +741,7 @@ export default {
 	width: fit-content;
 	box-sizing: border-box;
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(1, 1fr);
 	grid-template-rows: 15% 85%;
 	column-gap: 20px;
 	padding: 0 63.2px;
